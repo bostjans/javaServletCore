@@ -1,0 +1,482 @@
+package com.stupica.servlet;
+
+
+import com.stupica.ConstGlobal;
+import com.stupica.ConstWeb;
+import com.stupica.ResultProces;
+import com.stupica.core.UtilString;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.logging.Logger;
+
+
+/**
+ * Created by bostjans on 16/09/16.
+ */
+public class ServiceBase extends HttpServlet {
+
+    protected boolean     bSetCors = true;
+
+    protected boolean     bVerifyReferal = true;
+    protected boolean     bVerifyOrigin = false;
+    protected boolean     bVerifyAuthenticHeader = true;
+    protected boolean     bVerifyAuthenticUser = true;
+
+    protected String      sRefererHostAllow = "localhost:3000";
+
+    protected static Logger logger = Logger.getLogger(ServiceBase.class.getName());
+
+    private Setting objSetting = Setting.getConfig();
+
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Local variables
+        int             iResult;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+
+        //sMsgLog.append("doGet(): Start ..  -  ");
+        //sMsgLog.append("pathInfo: " + request.getPathInfo());
+        //sMsgLog.append("\n\tgetParameterMap: " + request.getParameterMap());
+        //logger.info(sMsgLog.toString());
+        logMethod(request, "doGet");
+
+        //super.doGet(request, response);
+
+        response.setContentType("application/json");        // JSON
+        request.setCharacterEncoding(ConstGlobal.ENCODING_UTF_8);
+        response.setCharacterEncoding(ConstGlobal.ENCODING_UTF_8);             // UTF-8
+
+        // Security verification(s) ..
+        if (bVerifyReferal) {
+            iResult = checkReferer(request, response);
+            // Error ..
+            if (iResult != ConstGlobal.RETURN_OK) {
+                logger.warning("doGet(): Msg.: Method checkReferer() reported inconsistency!");
+                return;
+            }
+        }
+        // Security verification(s) ..
+        if (bVerifyOrigin) {
+            iResult = checkOrigin(request, response);
+            // Error ..
+            if (iResult != ConstGlobal.RETURN_OK) {
+                logger.warning("doGet(): Msg.: Method checkOrigin() reported inconsistency!");
+                return;
+            }
+        }
+
+        if (bSetCors) {
+            // CORS (Access-Control-Allow-Origin)
+            response.addHeader("Access-Control-Allow-Origin", "*");
+        }
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doPostPut(request, response);
+    }
+
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doPostPut(request, response);
+    }
+
+    private void doPostPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Local variables
+        int             iResult;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+
+        logMethod(request, "doPostPut");
+
+        //super.doPut(request, response);
+
+        response.setContentType("application/json");        // JSON
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");             // UTF-8
+
+        // Security verification(s) ..
+        if (bVerifyReferal) {
+            iResult = checkReferer(request, response);
+            // Error ..
+            if (iResult != ConstGlobal.RETURN_OK) {
+                logger.warning("doPostPut(): Msg.: Method checkReferer() reported inconsistency!");
+                return;
+            }
+        }
+        // Security verification(s) ..
+        if (bVerifyOrigin) {
+            iResult = checkOrigin(request, response);
+            // Error ..
+            if (iResult != ConstGlobal.RETURN_OK) {
+                logger.warning("doPostPut(): Msg.: Method checkOrigin() reported inconsistency!");
+                return;
+            }
+        }
+
+        if (bSetCors) {
+            // CORS (Access-Control-Allow-Origin)
+            response.addHeader("Access-Control-Allow-Origin", "*");
+        }
+    }
+
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Local variables
+        int             iResult;
+        StringBuilder   sMsgLog = new StringBuilder();
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+
+        sMsgLog.append("doOptions(): Start ..  -  ");
+        sMsgLog.append("pathInfo: " + request.getPathInfo());
+        sMsgLog.append("\n\tgetParameterMap: " + request.getParameterMap());
+        logger.info(sMsgLog.toString());
+
+        if (bSetCors) {
+            // CORS (Access-Control-Allow-Origin)
+            response.addHeader("Access-Control-Allow-Origin", "*");
+            //response.addHeader("Access-Control-Allow-Methods", "PUT, POST");
+            response.addHeader("Access-Control-Allow-Methods", "GET, PUT");
+            //response.addHeader("Access-Control-Allow-Headers", "Content-Type");
+            response.addHeader("Access-Control-Allow-Headers",
+                    "Content-Type, " + ConstWeb.HTTP_HEADER_NAME_OECOMP + ", " + ConstWeb.HTTP_HEADER_NAME_USERNAME);
+        }
+        super.doOptions(request, response);
+    }
+
+
+    protected void logMethod(HttpServletRequest request, String asMethodName) {
+        StringBuilder   sMsgLog = new StringBuilder();
+
+        sMsgLog.append(asMethodName);
+        sMsgLog.append("(): Start ..  -  ");
+        sMsgLog.append("authType: " + request.getAuthType());
+        sMsgLog.append("; userPrincipal: " + request.getUserPrincipal());
+        sMsgLog.append("\n\treqUri: " + request.getRequestURI());
+        sMsgLog.append("\n\tcontextPath: " + request.getContextPath());
+        sMsgLog.append("; pathInfo: " + request.getPathInfo());
+        sMsgLog.append("\n\tgetParameterMap: " + request.getParameterMap());
+        logger.info(sMsgLog.toString());
+    }
+
+    protected void logPath(String[] aarrUrlPath) {
+        int             iCount = 0;
+        StringBuilder   sMsgLog = new StringBuilder();
+
+        sMsgLog.append("logPath");
+        sMsgLog.append("(): Start ..  -");
+        for (String sLoop : aarrUrlPath) {
+            sMsgLog.append("\n\tpathCount: " + iCount);
+            sMsgLog.append(";\tpath: " + sLoop);
+        }
+        logger.info(sMsgLog.toString());
+    }
+
+
+    protected int checkReferer(HttpServletRequest request, HttpServletResponse response) {
+        // Local variables
+        int             iResult;
+        String          sReferer;
+        String          sRefererHost = null;
+        String[]        arrReferer = null;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+        sRefererHostAllow = objSetting.getString("Http.Rest.Referer", sRefererHostAllow);
+
+        sReferer = request.getHeader("Referer");
+        //logger.info("checkReferer(): Referer: " + sReferer);
+        if (UtilString.isEmptyTrim(sReferer)) {
+            iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
+            logger.warning("checkReferer(): Msg.: Request not from trusted source!"
+                    + " Referer: " + sReferer);
+            sendResponse(response, iResult);
+            return iResult;
+        }
+        arrReferer = sReferer.split("/");
+        if (arrReferer == null) {
+            iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
+            logger.warning("checkReferer(): Msg.: Request not from trusted source!"
+                    + " Referer: " + sReferer);
+            sendResponse(response, iResult);
+            return iResult;
+        }
+        if (arrReferer.length < 2) {
+            iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
+            logger.warning("checkReferer(): Msg.: Request not from trusted source!"
+                    + " Referer: " + sReferer);
+            sendResponse(response, iResult);
+            return iResult;
+        }
+        sRefererHost = arrReferer[2];
+        if (!sRefererHost.equalsIgnoreCase(sRefererHostAllow)) {
+            iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
+            logger.warning("checkReferer(): Msg.: Request not from trusted source!"
+                    + " Referer: " + sReferer);
+            sendResponse(response, iResult);
+            return iResult;
+        }
+        return iResult;
+    }
+
+
+    protected int checkOrigin(HttpServletRequest request, HttpServletResponse response) {
+        // Local variables
+        int             iResult;
+        String          sOrigin = null;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+        sRefererHostAllow = objSetting.getString("Http.Rest.Referer", sRefererHostAllow);
+
+        sOrigin = request.getHeader("Origin");
+
+        if (UtilString.isEmptyTrim(sOrigin)) {
+            iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
+            logger.warning("checkOrigin(): Msg.: Request not from trusted source!"
+                    + " Origin: " + sOrigin);
+            sendResponse(response, iResult);
+            return iResult;
+        }
+        return iResult;
+    }
+
+
+    protected int checkAuthorizeRequest(HttpServletRequest request, HttpServletResponse response, ResultProces aobjResult) {
+        // Local variables
+        int             iResult;
+        //Integer         iIdOeComp = null;
+        //String          sIdComp = null;
+        String          sUsername = null;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+
+        if (!bVerifyAuthenticHeader) {
+            return iResult;
+        }
+
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            //sIdComp = request.getHeader(ConstWeb.HTTP_HEADER_NAME_OECOMP);
+            sUsername = request.getHeader(ConstWeb.HTTP_HEADER_NAME_USERNAME);
+
+//            if (UtilString.isEmpty(sIdComp)) {
+//                iIdOeComp = Integer.valueOf(0);
+//            } else {
+//                try {
+//                    iIdOeComp = Integer.parseInt(sIdComp);
+//                } catch (NumberFormatException nfe) {
+//                    iIdOeComp = Integer.valueOf(0);
+//                    logger.severe("checkAuthorizeRequest(): Incorrect ID(OE) specified!" + " sVal: " + sIdComp);
+//                }
+//            }
+//
+//            if (iIdOeComp == 0) {
+//                iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;
+//                sendResponse(response, iResult);
+//                logger.warning("checkAuthorizeRequest(): NOT Authorized!"
+//                        + " Oe: " + sIdComp
+//                        + "; UserName: " + sUsername
+//                        + "; Msg.: No OE specified.");
+//            }
+        }
+
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            if (UtilString.isEmpty(sUsername)) {
+                iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;
+                sendResponse(response, iResult);
+                logger.warning("checkAuthorizeRequest(): NOT Authorized!"
+                        //+ " Oe: " + sIdComp
+                        + "; UserName: " + sUsername
+                        + "; Msg.: No Username specified.");
+            } else if (sUsername.contentEquals(ConstGlobal.DEFINE_STR_NOVALUE)) {
+                iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;
+                sendResponse(response, iResult);
+                logger.warning("checkAuthorizeRequest(): NOT Authorized!"
+                        //+ " Oe: " + sIdComp
+                        + "; UserName: " + sUsername
+                        + "; Msg.: No Username specified.");
+            } else {
+                aobjResult.sText = sUsername;
+            }
+        }
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            if (bVerifyAuthenticUser) {
+                iResult = verifyUserAuth(response, sUsername);
+                // Error
+                if (iResult != ConstGlobal.RETURN_OK) {
+                    logger.severe("checkAuthorizeRequest(): Error at verifyUserAuth() operation!"
+                            + "\t sUser: " + sUsername
+                            + ";\t iResult: " + iResult);
+                }
+            }
+        }
+        aobjResult.iResult = iResult;
+        return iResult;
+    }
+
+
+    protected int verifyUserAuth(HttpServletResponse response, String asUser) {
+        // Local variables
+        int             iResult;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+
+        return iResult;
+    }
+
+
+    protected void sendResponse(HttpServletResponse response, int aiRespCode) {
+        PrintWriter     objOut = null;
+
+        try {
+            objOut = response.getWriter();
+        } catch (IOException ex) {
+            logger.severe("sendResponse(): Could NOT get writer for response!"
+                    + " Msg.: " + ex.getMessage());
+        }
+        sendResponse(response, objOut, aiRespCode);
+        objOut.close();
+    }
+
+    protected void sendResponse(HttpServletResponse response, PrintWriter aobjOut, int aiRespCode) {
+        int iRespCode = aiRespCode;
+
+        if (iRespCode < 100) {
+            iRespCode = ConstWeb.HTTP_RESP_INTERNAL_SRV_ERR;
+        }
+        try {
+            response.setStatus(iRespCode);
+        } catch (IllegalArgumentException ex) {
+            logger.severe("sendResponse(): Could NOT set response!"
+                    + " Code: " + aiRespCode
+                    + " Msg.: " + ex.getMessage());
+        }
+        response.resetBuffer();
+        if (aiRespCode != ConstGlobal.RETURN_OK) {
+            aobjOut.println("Error: " + aiRespCode);
+        }
+    }
+
+
+    protected int readRequestData(HttpServletRequest request, StringBuilder asData) {
+        // Local variables
+        int             iResult;
+        StringBuilder   sData = asData;
+        String          sTempLine = null;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+        try {
+            BufferedReader reader = request.getReader();
+            while ((sTempLine = reader.readLine()) != null)
+                sData.append(sTempLine);
+        } catch (Exception e) {
+            iResult = ConstGlobal.RETURN_ERROR;
+            logger.severe("readRequestData(): Error at data retrieval!"
+                    + " sVal: " + sTempLine);
+        }
+        return iResult;
+    }
+
+//    protected JsonObject readRequestDataParse(HttpServletRequest request) {
+//        // Local variables
+//        int             iResult;
+//        int             iLenData = 0;
+//        //int             iLenDataProbe = 0;
+//        StringBuilder   sData = new StringBuilder();
+//        JsonObject      objJson = null;
+//
+//        // Initialization
+//        //iResult = Constant.i_func_return_OK;
+//
+//        iResult = readRequestData(request, sData);
+//        // Check previous step
+//        if (iResult == Constant.i_func_return_OK) {
+//            iLenData = sData.length();
+//            if (iLenData > 0) {
+//                logger.info("readRequestDataParse():"
+//                        + " dataLength: " + sData.length()
+//                        + " sData: " + sData.toString());
+//                //if (iLenData < 10) {
+//                //    iLenDataProbe = iLenData;
+//                //} else {
+//                //    iLenDataProbe = 10;
+//                //}
+//                try {
+//                    //if (sData.substring(0, iLenDataProbe).startsWith("[")) {
+//                    //    objJsonArr = Json.parse(sData.toString()).asArray();
+//                    //} else {
+//                        objJson = Json.parse(sData.toString()).asObject();
+//                    //}
+//                } catch (Exception e) {
+//                    iResult = Constant.i_func_return_ERROR;
+//                    StringBuilder sMsg = new StringBuilder();
+//                    sMsg.append("readRequestDataParse(): Error at data parsing!");
+//                    if (sData.length() < 1024) {
+//                        sMsg.append(" sData: ");
+//                        sMsg.append(sData);
+//                    }
+//                    sMsg.append("\n\tsMsg.: ");
+//                    sMsg.append(e.getMessage());
+//                    logger.severe(sMsg.toString());
+//                }
+//            } else {
+//                logger.warning("readRequestDataParse(): No input data! sData: /");
+//            }
+//        }
+//        return objJson;
+//    }
+//
+//    protected JsonArray readRequestDataArrParse(HttpServletRequest request) {
+//        // Local variables
+//        int             iResult;
+//        int             iLenData = 0;
+//        StringBuilder   sData = new StringBuilder();
+//        JsonArray       objJsonArr = null;
+//
+//        // Initialization
+//        //iResult = Constant.i_func_return_OK;
+//
+//        iResult = readRequestData(request, sData);
+//        // Check previous step
+//        if (iResult == Constant.i_func_return_OK) {
+//            iLenData = sData.length();
+//            if (iLenData > 0) {
+//                logger.info("readRequestDataArrParse():"
+//                        + " dataLength: " + iLenData
+//                        + " sData: " + sData.toString());
+//                try {
+//                    objJsonArr = Json.parse(sData.toString()).asArray();
+//                } catch (Exception e) {
+//                    iResult = Constant.i_func_return_ERROR;
+//                    StringBuilder sMsg = new StringBuilder();
+//                    sMsg.append("readRequestDataArrParse(): Error at data parsing!");
+//                    if (sData.length() < 1024) {
+//                        sMsg.append(" sData: ");
+//                        sMsg.append(sData);
+//                    }
+//                    sMsg.append("\n\tsMsg.: ");
+//                    sMsg.append(e.getMessage());
+//                    logger.severe(sMsg.toString());
+//                }
+//            } else {
+//                logger.warning("readRequestDataArrParse(): No input data! sData: /");
+//            }
+//        }
+//        return objJsonArr;
+//    }
+}
