@@ -43,10 +43,6 @@ public class ServiceBase extends HttpServlet {
         // Initialization
         iResult = ConstGlobal.RETURN_OK;
 
-        //sMsgLog.append("doGet(): Start ..  -  ");
-        //sMsgLog.append("pathInfo: " + request.getPathInfo());
-        //sMsgLog.append("\n\tgetParameterMap: " + request.getParameterMap());
-        //logger.info(sMsgLog.toString());
         logMethod(request, "doGet");
 
         //super.doGet(request, response);
@@ -355,7 +351,7 @@ public class ServiceBase extends HttpServlet {
     protected void sendResponse(HttpServletResponse response, PrintWriter aobjOut, int aiRespCode) {
         int iRespCode = aiRespCode;
 
-        if (iRespCode < 100) {
+        if (iRespCode < ConstWeb.HTTP_RESP_CONTINUE) {
             iRespCode = ConstWeb.HTTP_RESP_INTERNAL_SRV_ERR;
         }
         try {
@@ -363,7 +359,7 @@ public class ServiceBase extends HttpServlet {
         } catch (IllegalArgumentException ex) {
             logger.severe("sendResponse(): Could NOT set response!"
                     + " Code: " + aiRespCode
-                    + " Msg.: " + ex.getMessage());
+                    + "; Msg.: " + ex.getMessage());
         }
         response.resetBuffer();
         if (aiRespCode != ConstGlobal.RETURN_OK) {
@@ -384,99 +380,19 @@ public class ServiceBase extends HttpServlet {
             BufferedReader reader = request.getReader();
             while ((sTempLine = reader.readLine()) != null)
                 sData.append(sTempLine);
+        } catch (IOException e) {
+            iResult = ConstGlobal.RETURN_ERROR;
+            logger.severe("readRequestData(): IO Error at data retrieval!"
+                    + " Msg.: " + e.getMessage()
+                    + "; sVal: " + sTempLine
+                    + "\n\tsData: " + sData.toString());
         } catch (Exception e) {
             iResult = ConstGlobal.RETURN_ERROR;
             logger.severe("readRequestData(): Error at data retrieval!"
-                    + " sVal: " + sTempLine);
+                    + " Msg.: " + e.getMessage()
+                    + "; sVal: " + sTempLine
+                    + "\n\tsData: " + sData.toString());
         }
         return iResult;
     }
-
-//    protected JsonObject readRequestDataParse(HttpServletRequest request) {
-//        // Local variables
-//        int             iResult;
-//        int             iLenData = 0;
-//        //int             iLenDataProbe = 0;
-//        StringBuilder   sData = new StringBuilder();
-//        JsonObject      objJson = null;
-//
-//        // Initialization
-//        //iResult = Constant.i_func_return_OK;
-//
-//        iResult = readRequestData(request, sData);
-//        // Check previous step
-//        if (iResult == Constant.i_func_return_OK) {
-//            iLenData = sData.length();
-//            if (iLenData > 0) {
-//                logger.info("readRequestDataParse():"
-//                        + " dataLength: " + sData.length()
-//                        + " sData: " + sData.toString());
-//                //if (iLenData < 10) {
-//                //    iLenDataProbe = iLenData;
-//                //} else {
-//                //    iLenDataProbe = 10;
-//                //}
-//                try {
-//                    //if (sData.substring(0, iLenDataProbe).startsWith("[")) {
-//                    //    objJsonArr = Json.parse(sData.toString()).asArray();
-//                    //} else {
-//                        objJson = Json.parse(sData.toString()).asObject();
-//                    //}
-//                } catch (Exception e) {
-//                    iResult = Constant.i_func_return_ERROR;
-//                    StringBuilder sMsg = new StringBuilder();
-//                    sMsg.append("readRequestDataParse(): Error at data parsing!");
-//                    if (sData.length() < 1024) {
-//                        sMsg.append(" sData: ");
-//                        sMsg.append(sData);
-//                    }
-//                    sMsg.append("\n\tsMsg.: ");
-//                    sMsg.append(e.getMessage());
-//                    logger.severe(sMsg.toString());
-//                }
-//            } else {
-//                logger.warning("readRequestDataParse(): No input data! sData: /");
-//            }
-//        }
-//        return objJson;
-//    }
-//
-//    protected JsonArray readRequestDataArrParse(HttpServletRequest request) {
-//        // Local variables
-//        int             iResult;
-//        int             iLenData = 0;
-//        StringBuilder   sData = new StringBuilder();
-//        JsonArray       objJsonArr = null;
-//
-//        // Initialization
-//        //iResult = Constant.i_func_return_OK;
-//
-//        iResult = readRequestData(request, sData);
-//        // Check previous step
-//        if (iResult == Constant.i_func_return_OK) {
-//            iLenData = sData.length();
-//            if (iLenData > 0) {
-//                logger.info("readRequestDataArrParse():"
-//                        + " dataLength: " + iLenData
-//                        + " sData: " + sData.toString());
-//                try {
-//                    objJsonArr = Json.parse(sData.toString()).asArray();
-//                } catch (Exception e) {
-//                    iResult = Constant.i_func_return_ERROR;
-//                    StringBuilder sMsg = new StringBuilder();
-//                    sMsg.append("readRequestDataArrParse(): Error at data parsing!");
-//                    if (sData.length() < 1024) {
-//                        sMsg.append(" sData: ");
-//                        sMsg.append(sData);
-//                    }
-//                    sMsg.append("\n\tsMsg.: ");
-//                    sMsg.append(e.getMessage());
-//                    logger.severe(sMsg.toString());
-//                }
-//            } else {
-//                logger.warning("readRequestDataArrParse(): No input data! sData: /");
-//            }
-//        }
-//        return objJsonArr;
-//    }
 }

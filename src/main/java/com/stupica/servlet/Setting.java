@@ -140,10 +140,9 @@ public class Setting {
             logger.severe("getString(): Settings were not read! Check logs!");
             return val;
         }
-        if (key != null)
-            if (!key.isEmpty())
-                if (properties.containsKey(key))
-                    val = properties.getProperty(key);
+        if (!UtilString.isEmptyTrim(key))
+            if (properties.containsKey(key))
+                val = properties.getProperty(key);
         if (val == null) {
             logger.severe("getString(): Entry missing for key: " + key);
         }

@@ -9,9 +9,32 @@ import com.eclipsesource.json.JsonObject;
 
 import com.stupica.ConstGlobal;
 import com.stupica.servlet.ServiceBase;
+import com.stupica.servlet.Setting;
 
 
 public class ServiceBaseJson extends ServiceBase {
+
+    protected boolean   bIsJsonEnvelopeMode = true;
+
+
+    protected JsonObject getResponseEnvObject(int aiResult) {
+        JsonObject      objJsonResponseEnv = null;
+        JsonObject      objJsonResponseHeader = null;
+
+        objJsonResponseHeader = Json.object().add("ResultCode", aiResult);
+        objJsonResponseHeader.add("ResultMsg", "OK");
+        objJsonResponseHeader.add("Msg", "/");
+        objJsonResponseHeader.add("ErrorCode", 0);
+        objJsonResponseHeader.add("ErrorMsg", "/");
+        objJsonResponseHeader.add("Status", "00");
+        objJsonResponseHeader.add("Application", Setting.getConfig().getString(Setting.PROJECT_NAME, "/"));
+        objJsonResponseHeader.add("Version", Setting.getConfig().getString(Setting.DEFINE_CONF_APP_VERSION, "/"));
+        objJsonResponseHeader.add("VersionManifest", "/");
+
+        objJsonResponseEnv = Json.object().add("Header", objJsonResponseHeader);
+        return objJsonResponseEnv;
+    }
+
 
     protected JsonObject readRequestDataParse(HttpServletRequest request) {
         // Local variables
