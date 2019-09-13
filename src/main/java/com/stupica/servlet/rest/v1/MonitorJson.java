@@ -21,10 +21,11 @@ import java.io.PrintWriter;
 public class MonitorJson extends ServiceBaseJson {
 
     /**
-     * @api {get} /monitorJson/v1/ Request Monitor status
+     * @api {get} /monitorJson/v1/ Request Monitor status in JSON
      * @apiName MonitorJson
      * @apiGroup Monitor
-     * @apiDescription REST method to monitor system accessibility.
+     * @apiDescription REST (JSON) method to monitor system accessibility.
+     * @apiVersion 1.0.0
      *
      * @apiSuccessExample Success-Response:
      *     HTTP/1.1 200 OK

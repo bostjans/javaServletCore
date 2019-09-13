@@ -1,0 +1,14 @@
+{
+  "name": "GenericAPI",
+  "version": "1.0.0",
+  "description": "REST Api documentation with apiDoc tool.",
+  "title": "Generic REST Api",
+  "url" : "https://lenkotr.stupica.com/lenkoTrRest",
+  "sampleUrl" : "http://localhost:8080/lenkoTrRest",
+  "header": {
+    "title": "Dev404 - Generic API"
+  },
+  "footer": {
+    "title": "Dev404: https://www.dev404.net"
+  }
+}

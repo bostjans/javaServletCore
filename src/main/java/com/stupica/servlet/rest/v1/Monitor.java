@@ -22,6 +22,8 @@ public class Monitor extends ServiceBase {
      * @apiName Monitor
      * @apiGroup Monitor
      * @apiDescription REST method to monitor system accessibility.
+     * @apiVersion 1.0.0
+     * @apiPermission none
      *
      * @apiSuccessExample Success-Response:
      *     HTTP/1.1 200 OK
