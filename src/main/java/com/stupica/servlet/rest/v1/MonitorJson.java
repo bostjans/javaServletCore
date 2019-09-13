@@ -24,11 +24,28 @@ public class MonitorJson extends ServiceBaseJson {
      * @api {get} /monitorJson/v1/ Request Monitor status in JSON
      * @apiName MonitorJson
      * @apiGroup Monitor
-     * @apiDescription REST (JSON) method to monitor system accessibility.
      * @apiVersion 1.0.0
+     * @apiPermission none
+     * @apiDescription REST (JSON) method to monitor system accessibility.
      *
-     * @apiSuccessExample Success-Response:
+     * @apiSuccessExample {json} Success-Response:
      *     HTTP/1.1 200 OK
+     *     {
+     *     "Header": {
+     *         "ResultCode": 1,
+     *         "ResultMsg": "OK",
+     *         "Msg": "/",
+     *         "ErrorCode": 0,
+     *         "ErrorMsg": "/",
+     *         "Status": "00",
+     *         "Application": "LenkoTraderREST",
+     *         "Version": "1.6.4",
+     *         "VersionManifest": "/"
+     *     },
+     *     "Data": {
+     *         "Status": "OK"
+     *     }
+     * }
      *
      * @apiSampleRequest /monitorJson/v1/
      *
