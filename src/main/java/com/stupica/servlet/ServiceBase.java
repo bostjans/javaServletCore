@@ -47,7 +47,8 @@ public class ServiceBase extends HttpServlet {
 
         //super.doGet(request, response);
 
-        response.setContentType("application/json");        // JSON
+        //response.setContentType("application/json");        // JSON
+        setContentType(response);
         request.setCharacterEncoding(ConstGlobal.ENCODING_UTF_8);
         response.setCharacterEncoding(ConstGlobal.ENCODING_UTF_8);             // UTF-8
 
@@ -95,7 +96,8 @@ public class ServiceBase extends HttpServlet {
 
         //super.doPut(request, response);
 
-        response.setContentType("application/json");        // JSON
+        //response.setContentType("application/json");        // JSON
+        setContentType(response);
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");             // UTF-8
 
@@ -332,6 +334,11 @@ public class ServiceBase extends HttpServlet {
         iResult = ConstGlobal.RETURN_OK;
 
         return iResult;
+    }
+
+
+    protected void setContentType(HttpServletResponse aobjResponse) {
+        aobjResponse.setContentType("application/text");        // JSON
     }
 
 

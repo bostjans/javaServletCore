@@ -2,6 +2,7 @@ package com.stupica.servlet.rest;
 
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
@@ -15,6 +16,11 @@ import com.stupica.servlet.Setting;
 public class ServiceBaseJson extends ServiceBase {
 
     protected boolean   bIsJsonEnvelopeMode = true;
+
+
+    protected void setContentType(HttpServletResponse aobjResponse) {
+        aobjResponse.setContentType("application/json");        // JSON
+    }
 
 
     protected JsonObject getResponseEnvObject(int aiResult) {
