@@ -77,10 +77,10 @@ public class MonitorJson extends ServiceBaseJson {
             objOut = response.getWriter();
         }
         {
-            objJsonResponse = Json.object().add("Status", "OK");
+            objJsonResponse = Json.object().add("status", "OK");
             if (bIsJsonEnvelopeMode) {
                 objJsonResponseEnv = getResponseEnvObject(iResult);
-                objJsonResponseEnv.add("Data", objJsonResponse);
+                objJsonResponseEnv.add("data", objJsonResponse);
                 objOut.print(objJsonResponseEnv.toString());
             } else {
                 objOut.print(objJsonResponse.toString());

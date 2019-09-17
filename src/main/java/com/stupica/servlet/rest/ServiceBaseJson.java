@@ -3,12 +3,14 @@ package com.stupica.servlet.rest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 
 import com.stupica.ConstGlobal;
+import com.stupica.core.UtilDate;
 import com.stupica.servlet.ServiceBase;
 import com.stupica.servlet.Setting;
 
@@ -24,20 +26,50 @@ public class ServiceBaseJson extends ServiceBase {
 
 
     protected JsonObject getResponseEnvObject(int aiResult) {
+        Date            dtNow = new Date();
+
         JsonObject      objJsonResponseEnv = null;
         JsonObject      objJsonResponseHeader = null;
+        //JsonObject      objJsonResponseErrorDetail = null;
+        JsonObject      objJsonResponsePagination = null;
+        JsonObject      objJsonResponseFilter = null;
+        JsonObject      objJsonResponseSort = null;
 
-        objJsonResponseHeader = Json.object().add("ResultCode", aiResult);
-        objJsonResponseHeader.add("ResultMsg", "OK");
-        objJsonResponseHeader.add("Msg", "/");
-        objJsonResponseHeader.add("ErrorCode", 0);
-        objJsonResponseHeader.add("ErrorMsg", "/");
-        objJsonResponseHeader.add("Status", "00");
-        objJsonResponseHeader.add("Application", Setting.getConfig().getString(Setting.PROJECT_NAME, "/"));
-        objJsonResponseHeader.add("Version", Setting.getConfig().getString(Setting.DEFINE_CONF_APP_VERSION, "/"));
-        objJsonResponseHeader.add("VersionManifest", "/");
+        //objJsonResponseErrorDetail = Json.object().add("location", "?");
+        //objJsonResponseErrorDetail.add("trace", "");
+        //objJsonResponseErrorDetail.add("moreInfo", "");
+        //objJsonResponseErrorDetail.add("msgDev", "");
 
-        objJsonResponseEnv = Json.object().add("Header", objJsonResponseHeader);
+        objJsonResponseHeader = Json.object().add("resultCode", aiResult);
+        objJsonResponseHeader.add("resultMsg", "OK");
+        objJsonResponseHeader.add("resultCount", 0);
+        objJsonResponseHeader.add("msg", "/");
+        objJsonResponseHeader.add("description", "n/a");
+        objJsonResponseHeader.add("timestamp", dtNow.getTime());
+        objJsonResponseHeader.add("timestampStr", UtilDate.toUTCString(dtNow));
+        objJsonResponseHeader.add("errorCode", 0);
+        objJsonResponseHeader.add("errorMsg", "/");
+        //objJsonResponseHeader.add("errorDetail", objJsonResponseErrorDetail);
+        objJsonResponseHeader.add("status", "00");
+        objJsonResponseHeader.add("application", Setting.getConfig().getString(Setting.PROJECT_NAME, "/"));
+        objJsonResponseHeader.add("version", Setting.getConfig().getString(Setting.DEFINE_CONF_APP_VERSION, "/"));
+        objJsonResponseHeader.add("versionApi", "1.0");
+        objJsonResponseHeader.add("versionManifest", "/");
+
+        objJsonResponsePagination = Json.object().add("page", 0);
+        objJsonResponsePagination.add("pageSize", 0);
+
+        objJsonResponseFilter = Json.object().add("filter", "/");
+
+        objJsonResponseSort = Json.object().add("sortBy", "/");
+
+        objJsonResponseEnv = Json.object().add("header", objJsonResponseHeader);
+        if (objJsonResponsePagination != null)
+            objJsonResponseEnv = Json.object().add("pagination", objJsonResponsePagination);
+        if (objJsonResponseFilter != null)
+            objJsonResponseEnv = Json.object().add("filter", objJsonResponseFilter);
+        if (objJsonResponseSort != null)
+            objJsonResponseEnv = Json.object().add("sort", objJsonResponseSort);
         return objJsonResponseEnv;
     }
 
