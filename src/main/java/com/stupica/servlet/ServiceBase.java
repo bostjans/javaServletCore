@@ -338,7 +338,7 @@ public class ServiceBase extends HttpServlet {
 
 
     protected void setContentType(HttpServletResponse aobjResponse) {
-        aobjResponse.setContentType("application/text");        // JSON
+        aobjResponse.setContentType("text/html");        // TEXT
     }
 
 
