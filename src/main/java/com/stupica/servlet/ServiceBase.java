@@ -3,7 +3,6 @@ package com.stupica.servlet;
 
 import com.stupica.ConstGlobal;
 import com.stupica.ConstWeb;
-import com.stupica.ResultProces;
 import com.stupica.core.UtilString;
 
 import javax.servlet.ServletException;
@@ -13,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.logging.Logger;
 
 
@@ -39,34 +37,37 @@ public class ServiceBase extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // Local variables
         int             iResult;
+        ResultProcessWeb objResult;
 
         // Initialization
         iResult = ConstGlobal.RETURN_OK;
+        objResult = new ResultProcessWeb();
 
         logMethod(request, "doGet");
 
         //super.doGet(request, response);
 
-        //response.setContentType("application/json");        // JSON
         setContentType(response);
         request.setCharacterEncoding(ConstGlobal.ENCODING_UTF_8);
         response.setCharacterEncoding(ConstGlobal.ENCODING_UTF_8);             // UTF-8
 
         // Security verification(s) ..
         if (bVerifyReferal) {
-            iResult = checkReferer(request, response);
+            iResult = checkReferer(request, objResult);
             // Error ..
             if (iResult != ConstGlobal.RETURN_OK) {
-                logger.warning("doGet(): Msg.: Method checkReferer() reported inconsistency!");
+                logger.warning("doGet(): Msg.: Method checkReferer() reported inconsistency!"
+                    + " Msg.: " + objResult.sMsg.toString());
                 return;
             }
         }
         // Security verification(s) ..
         if (bVerifyOrigin) {
-            iResult = checkOrigin(request, response);
+            iResult = checkOrigin(request, objResult);
             // Error ..
             if (iResult != ConstGlobal.RETURN_OK) {
-                logger.warning("doGet(): Msg.: Method checkOrigin() reported inconsistency!");
+                logger.warning("doGet(): Msg.: Method checkOrigin() reported inconsistency!"
+                        + " Msg.: " + objResult.sMsg.toString());
                 return;
             }
         }
@@ -88,9 +89,11 @@ public class ServiceBase extends HttpServlet {
     private void doPostPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // Local variables
         int             iResult;
+        ResultProcessWeb objResult;
 
         // Initialization
         iResult = ConstGlobal.RETURN_OK;
+        objResult = new ResultProcessWeb();
 
         logMethod(request, "doPostPut");
 
@@ -103,19 +106,21 @@ public class ServiceBase extends HttpServlet {
 
         // Security verification(s) ..
         if (bVerifyReferal) {
-            iResult = checkReferer(request, response);
+            iResult = checkReferer(request, objResult);
             // Error ..
             if (iResult != ConstGlobal.RETURN_OK) {
-                logger.warning("doPostPut(): Msg.: Method checkReferer() reported inconsistency!");
+                logger.warning("doPostPut(): Msg.: Method checkReferer() reported inconsistency!"
+                        + " Msg.: " + objResult.sMsg.toString());
                 return;
             }
         }
         // Security verification(s) ..
         if (bVerifyOrigin) {
-            iResult = checkOrigin(request, response);
+            iResult = checkOrigin(request, objResult);
             // Error ..
             if (iResult != ConstGlobal.RETURN_OK) {
-                logger.warning("doPostPut(): Msg.: Method checkOrigin() reported inconsistency!");
+                logger.warning("doPostPut(): Msg.: Method checkOrigin() reported inconsistency!"
+                        + " Msg.: " + objResult.sMsg.toString());
                 return;
             }
         }
@@ -180,7 +185,7 @@ public class ServiceBase extends HttpServlet {
     }
 
 
-    protected int checkReferer(HttpServletRequest request, HttpServletResponse response) {
+    protected int checkReferer(HttpServletRequest request, ResultProcessWeb aobjResult) {
         // Local variables
         int             iResult;
         String          sReferer;
@@ -191,65 +196,76 @@ public class ServiceBase extends HttpServlet {
         iResult = ConstGlobal.RETURN_OK;
         sRefererHostAllow = objSetting.getString("Http.Rest.Referer", sRefererHostAllow);
 
-        sReferer = request.getHeader("Referer");
+        sReferer = request.getHeader(ConstWeb.HTTP_HEADER_NAME_REFERER);
         //logger.info("checkReferer(): Referer: " + sReferer);
         if (UtilString.isEmptyTrim(sReferer)) {
-            iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
-            logger.warning("checkReferer(): Msg.: Request not from trusted source!"
+            iResult = ConstGlobal.RETURN_ERROR;
+            aobjResult.iResult = ConstGlobal.RETURN_ERROR;
+            aobjResult.iResultWeb = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
+            aobjResult.sMsg.append("Request not from trusted source!"
                     + " Referer: " + sReferer);
-            sendResponse(response, iResult);
+            logger.warning("checkReferer(): Msg.: " + aobjResult.sMsg.toString());
+            //sendResponse(response, iResult);
             return iResult;
         }
         arrReferer = sReferer.split("/");
         if (arrReferer == null) {
-            iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
-            logger.warning("checkReferer(): Msg.: Request not from trusted source!"
+            iResult = ConstGlobal.RETURN_ERROR;
+            aobjResult.iResult = ConstGlobal.RETURN_ERROR;
+            aobjResult.iResultWeb = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
+            aobjResult.sMsg.append("Request not from trusted source!"
                     + " Referer: " + sReferer);
-            sendResponse(response, iResult);
+            logger.warning("checkReferer(): Msg.: " + aobjResult.sMsg.toString());
             return iResult;
         }
         if (arrReferer.length < 2) {
-            iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
-            logger.warning("checkReferer(): Msg.: Request not from trusted source!"
+            iResult = ConstGlobal.RETURN_ERROR;
+            aobjResult.iResult = ConstGlobal.RETURN_ERROR;
+            aobjResult.iResultWeb = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
+            aobjResult.sMsg.append("Request not from trusted source!"
                     + " Referer: " + sReferer);
-            sendResponse(response, iResult);
+            logger.warning("checkReferer(): Msg.: " + aobjResult.sMsg.toString());
             return iResult;
         }
         sRefererHost = arrReferer[2];
         if (!sRefererHost.equalsIgnoreCase(sRefererHostAllow)) {
-            iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
-            logger.warning("checkReferer(): Msg.: Request not from trusted source!"
+            iResult = ConstGlobal.RETURN_ERROR;
+            aobjResult.iResult = ConstGlobal.RETURN_ERROR;
+            aobjResult.iResultWeb = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
+            aobjResult.sMsg.append("Request not from trusted source!"
                     + " Referer: " + sReferer);
-            sendResponse(response, iResult);
+            logger.warning("checkReferer(): Msg.: " + aobjResult.sMsg.toString());
             return iResult;
         }
         return iResult;
     }
 
 
-    protected int checkOrigin(HttpServletRequest request, HttpServletResponse response) {
+    protected int checkOrigin(HttpServletRequest request, ResultProcessWeb aobjResult) {
         // Local variables
         int             iResult;
         String          sOrigin = null;
 
         // Initialization
         iResult = ConstGlobal.RETURN_OK;
-        sRefererHostAllow = objSetting.getString("Http.Rest.Referer", sRefererHostAllow);
+        sRefererHostAllow = objSetting.getString("Http.Rest.Origin", sRefererHostAllow);
 
-        sOrigin = request.getHeader("Origin");
+        sOrigin = request.getHeader(ConstWeb.HTTP_HEADER_NAME_ORIGIN);
 
         if (UtilString.isEmptyTrim(sOrigin)) {
-            iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
-            logger.warning("checkOrigin(): Msg.: Request not from trusted source!"
+            iResult = ConstGlobal.RETURN_ERROR;
+            aobjResult.iResult = ConstGlobal.RETURN_ERROR;
+            aobjResult.iResultWeb = ConstWeb.HTTP_RESP_UNAUTHORIZED;  // Unauthorized (RFC 7235)
+            aobjResult.sMsg.append("Request not from trusted source!"
                     + " Origin: " + sOrigin);
-            sendResponse(response, iResult);
-            return iResult;
+            logger.warning("checkOrigin(): Msg.: " + aobjResult.sMsg.toString());
+            //return iResult;
         }
         return iResult;
     }
 
 
-    protected int checkAuthorizeRequest(HttpServletRequest request, HttpServletResponse response, ResultProces aobjResult) {
+    protected int checkAuthorizeRequest(HttpServletRequest request, HttpServletResponse response, ResultProcessWeb aobjResult) {
         // Local variables
         int             iResult;
         //Integer         iIdOeComp = null;
@@ -278,7 +294,7 @@ public class ServiceBase extends HttpServlet {
 //                    logger.severe("checkAuthorizeRequest(): Incorrect ID(OE) specified!" + " sVal: " + sIdComp);
 //                }
 //            }
-//
+
 //            if (iIdOeComp == 0) {
 //                iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;
 //                sendResponse(response, iResult);
@@ -292,19 +308,27 @@ public class ServiceBase extends HttpServlet {
         // Check previous step
         if (iResult == ConstGlobal.RETURN_OK) {
             if (UtilString.isEmpty(sUsername)) {
-                iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;
-                sendResponse(response, iResult);
-                logger.warning("checkAuthorizeRequest(): NOT Authorized!"
+                iResult = ConstGlobal.RETURN_SEC_ERROR;
+                aobjResult.iResult = ConstGlobal.RETURN_SEC_ERROR;
+                aobjResult.iResultWeb = ConstWeb.HTTP_RESP_UNAUTHORIZED;
+                aobjResult.bIsDone = true;
+                aobjResult.sMsg.append("NOT Authorized!"
                         //+ " Oe: " + sIdComp
                         + "; UserName: " + sUsername
                         + "; Msg.: No Username specified.");
+                //sendResponse(response, iResult);
+                logger.warning("checkAuthorizeRequest(): " + aobjResult.sMsg.toString());
             } else if (sUsername.contentEquals(ConstGlobal.DEFINE_STR_NOVALUE)) {
-                iResult = ConstWeb.HTTP_RESP_UNAUTHORIZED;
-                sendResponse(response, iResult);
-                logger.warning("checkAuthorizeRequest(): NOT Authorized!"
+                iResult = ConstGlobal.RETURN_SEC_ERROR;
+                aobjResult.iResult = ConstGlobal.RETURN_SEC_ERROR;
+                aobjResult.iResultWeb = ConstWeb.HTTP_RESP_UNAUTHORIZED;
+                aobjResult.bIsDone = true;
+                aobjResult.sMsg.append("NOT Authorized!"
                         //+ " Oe: " + sIdComp
                         + "; UserName: " + sUsername
                         + "; Msg.: No Username specified.");
+                //sendResponse(response, iResult);
+                logger.warning("checkAuthorizeRequest(): " + aobjResult.sMsg.toString());
             } else {
                 aobjResult.sText = sUsername;
             }
@@ -312,7 +336,7 @@ public class ServiceBase extends HttpServlet {
         // Check previous step
         if (iResult == ConstGlobal.RETURN_OK) {
             if (bVerifyAuthenticUser) {
-                iResult = verifyUserAuth(response, sUsername);
+                iResult = verifyUserAuth(response, sUsername, aobjResult);
                 // Error
                 if (iResult != ConstGlobal.RETURN_OK) {
                     logger.severe("checkAuthorizeRequest(): Error at verifyUserAuth() operation!"
@@ -321,12 +345,13 @@ public class ServiceBase extends HttpServlet {
                 }
             }
         }
-        aobjResult.iResult = iResult;
+        if (aobjResult.iResult != iResult)
+            aobjResult.iResult = iResult;
         return iResult;
     }
 
 
-    protected int verifyUserAuth(HttpServletResponse response, String asUser) {
+    protected int verifyUserAuth(HttpServletResponse response, String asUser, ResultProcessWeb aobjResult) {
         // Local variables
         int             iResult;
 
@@ -342,6 +367,7 @@ public class ServiceBase extends HttpServlet {
     }
 
 
+    /*
     protected void sendResponse(HttpServletResponse response, int aiRespCode) {
         PrintWriter     objOut = null;
 
@@ -372,7 +398,7 @@ public class ServiceBase extends HttpServlet {
         if (aiRespCode != ConstGlobal.RETURN_OK) {
             aobjOut.println("Error: " + aiRespCode);
         }
-    }
+    } */
 
 
     protected int readRequestData(HttpServletRequest request, StringBuilder asData) {

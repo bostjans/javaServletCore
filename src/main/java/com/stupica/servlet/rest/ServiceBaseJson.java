@@ -3,21 +3,27 @@ package com.stupica.servlet.rest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Date;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.WriterConfig;
 
 import com.stupica.ConstGlobal;
 import com.stupica.core.UtilDate;
+import com.stupica.core.UtilString;
+import com.stupica.servlet.ResultProcessWeb;
 import com.stupica.servlet.ServiceBase;
 import com.stupica.servlet.Setting;
 
 
 public class ServiceBaseJson extends ServiceBase {
 
-    protected boolean   bIsJsonEnvelopeMode = true;
+    protected boolean   bIsJsonEnvelopeMode = false;
+    protected boolean   bIsJsonPrettyPrintMode = false;
 
 
     protected void setContentType(HttpServletResponse aobjResponse) {
@@ -25,8 +31,8 @@ public class ServiceBaseJson extends ServiceBase {
     }
 
 
-    protected JsonObject getResponseEnvObject(int aiResult) {
-        Date            dtNow = new Date();
+    protected JsonObject getResponseEnvObject(int aiResult, String asStatus, String asMsg, String asDesc, Date adtTrasfer) {
+        String          sTemp;
 
         JsonObject      objJsonResponseEnv = null;
         JsonObject      objJsonResponseHeader = null;
@@ -41,16 +47,27 @@ public class ServiceBaseJson extends ServiceBase {
         //objJsonResponseErrorDetail.add("msgDev", "");
 
         objJsonResponseHeader = Json.object().add("resultCode", aiResult);
-        objJsonResponseHeader.add("resultMsg", "OK");
+        switch (aiResult) {
+            case ConstGlobal.RETURN_OK: sTemp = "OK"; break;
+            case ConstGlobal.RETURN_WARN: sTemp = "WARNING"; break;
+            case ConstGlobal.RETURN_ERROR: sTemp = "ERROR"; break;
+            case ConstGlobal.RETURN_NA: sTemp = "NA"; break;
+            default: sTemp = "unKnown";
+        }
+        objJsonResponseHeader.add("resultMsg", sTemp);
         objJsonResponseHeader.add("resultCount", 0);
-        objJsonResponseHeader.add("msg", "/");
-        objJsonResponseHeader.add("description", "n/a");
-        objJsonResponseHeader.add("timestamp", dtNow.getTime());
-        objJsonResponseHeader.add("timestampStr", UtilDate.toUTCString(dtNow));
-        objJsonResponseHeader.add("errorCode", 0);
-        objJsonResponseHeader.add("errorMsg", "/");
+        if (!UtilString.isEmpty(asMsg))
+            objJsonResponseHeader.add("msg", asMsg);
+        if (!UtilString.isEmpty(asDesc))
+            objJsonResponseHeader.add("description", asDesc);
+        objJsonResponseHeader.add("timestamp", adtTrasfer.getTime());
+        objJsonResponseHeader.add("timestampStr", UtilDate.toUniversalString(adtTrasfer));
+        if (aiResult != ConstGlobal.RETURN_OK) {
+            objJsonResponseHeader.add("errorCode", aiResult);
+            objJsonResponseHeader.add("errorMsg", "/");
+        }
         //objJsonResponseHeader.add("errorDetail", objJsonResponseErrorDetail);
-        objJsonResponseHeader.add("status", "00");
+        objJsonResponseHeader.add("status", asStatus);
         objJsonResponseHeader.add("application", Setting.getConfig().getString(Setting.PROJECT_NAME, "/"));
         objJsonResponseHeader.add("version", Setting.getConfig().getString(Setting.DEFINE_CONF_APP_VERSION, "/"));
         objJsonResponseHeader.add("versionApi", "1.0");
@@ -65,12 +82,248 @@ public class ServiceBaseJson extends ServiceBase {
 
         objJsonResponseEnv = Json.object().add("header", objJsonResponseHeader);
         if (objJsonResponsePagination != null)
-            objJsonResponseEnv = Json.object().add("pagination", objJsonResponsePagination);
+            objJsonResponseEnv.add("pagination", objJsonResponsePagination);
         if (objJsonResponseFilter != null)
-            objJsonResponseEnv = Json.object().add("filter", objJsonResponseFilter);
+            objJsonResponseEnv.add("filter", objJsonResponseFilter);
         if (objJsonResponseSort != null)
-            objJsonResponseEnv = Json.object().add("sort", objJsonResponseSort);
+            objJsonResponseEnv.add("sort", objJsonResponseSort);
         return objJsonResponseEnv;
+    }
+
+
+    protected int prepareSendResponse(HttpServletResponse aobjResponse, ResultProcessWeb aobjResult, JsonArray aarrData) {
+        // Local variables
+        int             iResult;
+        boolean         bShouldSendContent = true;
+        String          sData = null;
+        Date            dtNow = new Date();
+        JsonObject      objJsonResponseEnv = null;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+
+        //logger.info("prepareSendResponse(): Set response status ..");
+        if (aobjResult.iResultWeb == HttpServletResponse.SC_NO_CONTENT) {
+            bShouldSendContent = false;
+            if ((aarrData != null) || (bIsJsonEnvelopeMode)) {
+                sData = "(HTTP)ResponseCode is set to: " + aobjResult.iResultWeb
+                        + " and response data is provided, which will NOT be send to client as Code indicate: NO DATA!";
+                aobjResponse.setHeader("responseMsg", sData);
+                logger.warning("prepareSendResponse(): " + sData);
+            }
+        }
+        aobjResponse.setStatus(aobjResult.iResultWeb);
+//        if (aobjResult.iResultWeb >= HttpServletResponse.SC_BAD_REQUEST) {
+//            try {
+//                logger.info("prepareSendResponse(): Set response error status ..");
+//                aobjResponse.sendError(aobjResult.iResultWeb, aobjResult.sMsg.toString());
+//            } catch (IOException ex) {
+//                iResult = ConstGlobal.RETURN_ERROR;
+//                logger.severe("prepareSendResponse(): Can NOT send response Error!"
+//                        + " Msg.: " + ex.getMessage());
+//            }
+//        }
+        //aobjResponse.setDateHeader("dtTransfer", dtNow.getTime());
+
+        if (aobjResponse.isCommitted()) {
+            logger.warning("prepareSendResponse(): The response cache data has already been send!");
+        }
+
+        if (bShouldSendContent) {
+            if (bIsJsonEnvelopeMode) {
+                //logger.info("prepareSendResponse(): .. it is Envelope response ..");
+                if (aobjResult.sText.toUpperCase().contentEquals(ConstGlobal.DEFINE_STR_OK)) {
+                    objJsonResponseEnv = getResponseEnvObject(iResult, aobjResult.sText, null, aobjResult.sMsg.toString(), dtNow);
+                } else {
+                    objJsonResponseEnv = getResponseEnvObject(iResult, aobjResult.sText, aobjResult.sMsg.toString(), null, dtNow);
+                }
+                if (aarrData == null) {
+                    //objJsonResponseEnv.add("data", "{}");
+                    objJsonResponseEnv.add("data", Json.object());
+                } else {
+                    objJsonResponseEnv.add("data", aarrData);
+                }
+
+                if (bIsJsonPrettyPrintMode) {
+                    sData = objJsonResponseEnv.toString(WriterConfig.PRETTY_PRINT);
+                } else {
+                    sData = objJsonResponseEnv.toString();
+                }
+            } else {
+                if (bIsJsonPrettyPrintMode) {
+                    if (aarrData != null) sData = aarrData.toString(WriterConfig.PRETTY_PRINT);
+                } else {
+                    if (aarrData != null) sData = aarrData.toString();
+                }
+            }
+        }
+        iResult = sendResponse(aobjResponse, aobjResult, sData);
+        return iResult;
+    }
+
+    protected int prepareSendResponse(HttpServletResponse aobjResponse, ResultProcessWeb aobjResult) {
+        return prepareSendResponse(aobjResponse, aobjResult, (JsonObject) null);
+    }
+    protected int prepareSendResponse(HttpServletResponse aobjResponse, ResultProcessWeb aobjResult, JsonObject aobjData) {
+        // Local variables
+        int             iResult;
+        boolean         bShouldSendContent = true;
+        String          sData = null;
+        Date            dtNow = new Date();
+        JsonObject      objJsonResponseEnv = null;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+
+        //logger.info("prepareSendResponse(): Set response status ..");
+        if (aobjResult.iResultWeb == HttpServletResponse.SC_NO_CONTENT) {
+            bShouldSendContent = false;
+            if ((aobjData != null) || (bIsJsonEnvelopeMode)) {
+                sData = "(HTTP)ResponseCode is set to: " + aobjResult.iResultWeb
+                        + " and response data is provided, which will NOT be send to client as Code indicate: NO DATA!";
+                aobjResponse.setHeader("responseMsg", sData);
+                logger.warning("prepareSendResponse(): " + sData);
+            }
+        }
+        aobjResponse.setStatus(aobjResult.iResultWeb);
+//        if (aobjResult.iResultWeb >= HttpServletResponse.SC_BAD_REQUEST) {
+//            try {
+//                logger.info("prepareSendResponse(): Set response error status ..");
+//                aobjResponse.sendError(aobjResult.iResultWeb, aobjResult.sMsg.toString());
+//            } catch (IOException ex) {
+//                iResult = ConstGlobal.RETURN_ERROR;
+//                logger.severe("prepareSendResponse(): Can NOT send response Error!"
+//                        + " Msg.: " + ex.getMessage());
+//            }
+//        }
+        //aobjResponse.setDateHeader("dtTransfer", dtNow.getTime());
+
+        if (aobjResponse.isCommitted()) {
+            logger.warning("prepareSendResponse(): The response cache data has already been send!");
+        }
+
+        if (bShouldSendContent) {
+            if (bIsJsonEnvelopeMode) {
+                //logger.info("prepareSendResponse(): .. it is Envelope response ..");
+                if (aobjResult.sText.toUpperCase().contentEquals(ConstGlobal.DEFINE_STR_OK)) {
+                    objJsonResponseEnv = getResponseEnvObject(iResult, aobjResult.sText, null, aobjResult.sMsg.toString(), dtNow);
+                } else {
+                    objJsonResponseEnv = getResponseEnvObject(iResult, aobjResult.sText, aobjResult.sMsg.toString(), null, dtNow);
+                }
+                if (aobjData == null) {
+                    //objJsonResponseEnv.add("data", "{}");
+                    objJsonResponseEnv.add("data", Json.object());
+                } else {
+                    objJsonResponseEnv.add("data", aobjData);
+                }
+
+                if (bIsJsonPrettyPrintMode) {
+                    sData = objJsonResponseEnv.toString(WriterConfig.PRETTY_PRINT);
+                } else {
+                    sData = objJsonResponseEnv.toString();
+                }
+            } else {
+                if (bIsJsonPrettyPrintMode) {
+                    if (aobjData != null) sData = aobjData.toString(WriterConfig.PRETTY_PRINT);
+                } else {
+                    if (aobjData != null) sData = aobjData.toString();
+                }
+            }
+        }
+//        //sData = "test";
+//        if (!UtilString.isEmptyTrim(sData)) {
+//            aobjResponse.setContentLength(sData.length());
+//        } else {
+//            aobjResponse.setContentLength(0);
+//        }
+//
+//        try {
+//            objOut = aobjResponse.getWriter();
+//            //logger.info("prepareSendResponse(): Writer is ok ..");
+//        } catch (IOException ex) {
+//            iResult = ConstGlobal.RETURN_ERROR;
+//            logger.severe("prepareSendResponse(): Can NOT send response!"
+//                    + " Msg.: " + ex.getMessage());
+//        }
+//        if (objOut != null) {
+//            //aobjResponse.resetBuffer();
+//            if (!UtilString.isEmpty(sData)) {
+//                if (bIsJsonPrettyPrintMode) {
+//                    //logger.info("prepareSendResponse(): .. it is PrettyPrint Mode .."
+//                    //        + "\n\tData: " + sData);
+//                    objOut.println(sData);
+//                } else {
+//                    //logger.info("prepareSendResponse(): .. it is Compact Mode ..");
+//                    objOut.print(sData);
+//                }
+//            }
+//        }
+//
+//        if (objOut != null) {
+//            objOut.flush();
+//            //if (objOut.checkError()) {
+//            //    String sTemp = "Error(s) detected at data send! Data: ";
+//            //    if (sData.length() > 32)    sTemp += sData.substring(0, 32) + " ..";
+//            //    else                        sTemp += sData;
+//            //    logger.warning("prepareSendResponse(): " + sTemp);
+//            //}
+//            objOut.close();
+//        }
+//        //logger.info("prepareSendResponse(): isCommitted: " + aobjResponse.isCommitted());
+        iResult = sendResponse(aobjResponse, aobjResult, sData);
+        return iResult;
+    }
+
+    protected int sendResponse(HttpServletResponse aobjResponse, ResultProcessWeb aobjResult, String asData) {
+        // Local variables
+        int             iResult;
+        String          sData = asData;
+        PrintWriter     objOut = null;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+
+        //sData = "test";
+        if (!UtilString.isEmptyTrim(sData)) {
+            aobjResponse.setContentLength(sData.length());
+        } else {
+            aobjResponse.setContentLength(0);
+        }
+
+        try {
+            objOut = aobjResponse.getWriter();
+            //logger.info("sendResponse(): Writer is ok ..");
+        } catch (IOException ex) {
+            iResult = ConstGlobal.RETURN_ERROR;
+            logger.severe("sendResponse(): Can NOT send response!"
+                    + " Msg.: " + ex.getMessage());
+        }
+        if (objOut != null) {
+            //aobjResponse.resetBuffer();
+            if (!UtilString.isEmpty(sData)) {
+                if (bIsJsonPrettyPrintMode) {
+                    //logger.info("sendResponse(): .. it is PrettyPrint Mode .."
+                    //        + "\n\tData: " + sData);
+                    objOut.println(sData);
+                } else {
+                    //logger.info("sendResponse(): .. it is Compact Mode ..");
+                    objOut.print(sData);
+                }
+            }
+        }
+
+        if (objOut != null) {
+            objOut.flush();
+            //if (objOut.checkError()) {
+            //    String sTemp = "Error(s) detected at data send! Data: ";
+            //    if (sData.length() > 32)    sTemp += sData.substring(0, 32) + " ..";
+            //    else                        sTemp += sData;
+            //    logger.warning("sendResponse(): " + sTemp);
+            //}
+            objOut.close();
+        }
+        //logger.info("sendResponse(): isCommitted: " + aobjResponse.isCommitted());
+        return iResult;
     }
 
 
