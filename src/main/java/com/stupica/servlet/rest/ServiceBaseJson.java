@@ -186,17 +186,6 @@ public class ServiceBaseJson extends ServiceBase {
             }
         }
         aobjResponse.setStatus(aobjResult.iResultWeb);
-//        if (aobjResult.iResultWeb >= HttpServletResponse.SC_BAD_REQUEST) {
-//            try {
-//                logger.info("prepareSendResponse(): Set response error status ..");
-//                aobjResponse.sendError(aobjResult.iResultWeb, aobjResult.sMsg.toString());
-//            } catch (IOException ex) {
-//                iResult = ConstGlobal.RETURN_ERROR;
-//                logger.severe("prepareSendResponse(): Can NOT send response Error!"
-//                        + " Msg.: " + ex.getMessage());
-//            }
-//        }
-        //aobjResponse.setDateHeader("dtTransfer", dtNow.getTime());
 
         if (aobjResponse.isCommitted()) {
             logger.warning("prepareSendResponse(): The response cache data has already been send!");
@@ -230,46 +219,6 @@ public class ServiceBaseJson extends ServiceBase {
                 }
             }
         }
-//        //sData = "test";
-//        if (!UtilString.isEmptyTrim(sData)) {
-//            aobjResponse.setContentLength(sData.length());
-//        } else {
-//            aobjResponse.setContentLength(0);
-//        }
-//
-//        try {
-//            objOut = aobjResponse.getWriter();
-//            //logger.info("prepareSendResponse(): Writer is ok ..");
-//        } catch (IOException ex) {
-//            iResult = ConstGlobal.RETURN_ERROR;
-//            logger.severe("prepareSendResponse(): Can NOT send response!"
-//                    + " Msg.: " + ex.getMessage());
-//        }
-//        if (objOut != null) {
-//            //aobjResponse.resetBuffer();
-//            if (!UtilString.isEmpty(sData)) {
-//                if (bIsJsonPrettyPrintMode) {
-//                    //logger.info("prepareSendResponse(): .. it is PrettyPrint Mode .."
-//                    //        + "\n\tData: " + sData);
-//                    objOut.println(sData);
-//                } else {
-//                    //logger.info("prepareSendResponse(): .. it is Compact Mode ..");
-//                    objOut.print(sData);
-//                }
-//            }
-//        }
-//
-//        if (objOut != null) {
-//            objOut.flush();
-//            //if (objOut.checkError()) {
-//            //    String sTemp = "Error(s) detected at data send! Data: ";
-//            //    if (sData.length() > 32)    sTemp += sData.substring(0, 32) + " ..";
-//            //    else                        sTemp += sData;
-//            //    logger.warning("prepareSendResponse(): " + sTemp);
-//            //}
-//            objOut.close();
-//        }
-//        //logger.info("prepareSendResponse(): isCommitted: " + aobjResponse.isCommitted());
         iResult = sendResponse(aobjResponse, aobjResult, sData);
         return iResult;
     }
@@ -336,7 +285,6 @@ public class ServiceBaseJson extends ServiceBase {
         JsonObject      objJson = null;
 
         // Initialization
-        //iResult = Constant.i_func_return_OK;
 
         iResult = readRequestData(request, sData);
         // Check previous step
