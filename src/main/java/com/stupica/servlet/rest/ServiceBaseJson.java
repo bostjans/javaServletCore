@@ -157,7 +157,7 @@ public class ServiceBaseJson extends ServiceBase {
                 }
             }
         }
-        iResult = sendResponse(aobjResponse, aobjResult, sData);
+        iResult = sendResponse(aobjResponse, sData);
         return iResult;
     }
 
@@ -219,11 +219,11 @@ public class ServiceBaseJson extends ServiceBase {
                 }
             }
         }
-        iResult = sendResponse(aobjResponse, aobjResult, sData);
+        iResult = sendResponse(aobjResponse, sData);
         return iResult;
     }
 
-    protected int sendResponse(HttpServletResponse aobjResponse, ResultProcessWeb aobjResult, String asData) {
+    protected int sendResponse(HttpServletResponse aobjResponse, String asData) {
         // Local variables
         int             iResult;
         String          sData = asData;
@@ -231,6 +231,7 @@ public class ServiceBaseJson extends ServiceBase {
 
         // Initialization
         iResult = ConstGlobal.RETURN_OK;
+        //logger.info("sendResponse(): Start ..  -  Data: " + sData);
 
         //sData = "test";
         if (!UtilString.isEmptyTrim(sData)) {
@@ -241,7 +242,6 @@ public class ServiceBaseJson extends ServiceBase {
 
         try {
             objOut = aobjResponse.getWriter();
-            //logger.info("sendResponse(): Writer is ok ..");
         } catch (IOException ex) {
             iResult = ConstGlobal.RETURN_ERROR;
             logger.severe("sendResponse(): Can NOT send response!"
