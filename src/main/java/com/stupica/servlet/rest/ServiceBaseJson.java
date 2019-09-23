@@ -95,7 +95,8 @@ public class ServiceBaseJson extends ServiceBase {
         // Local variables
         int             iResult;
         boolean         bShouldSendContent = true;
-        String          sData = null;
+        String          sTemp = null;
+        StringBuilder   sData = null;
         Date            dtNow = new Date();
         JsonObject      objJsonResponseEnv = null;
 
@@ -106,10 +107,10 @@ public class ServiceBaseJson extends ServiceBase {
         if (aobjResult.iResultWeb == HttpServletResponse.SC_NO_CONTENT) {
             bShouldSendContent = false;
             if ((aarrData != null) || (bIsJsonEnvelopeMode)) {
-                sData = "(HTTP)ResponseCode is set to: " + aobjResult.iResultWeb
+                sTemp = "(HTTP)ResponseCode is set to: " + aobjResult.iResultWeb
                         + " and response data is provided, which will NOT be send to client as Code indicate: NO DATA!";
-                aobjResponse.setHeader("responseMsg", sData);
-                logger.warning("prepareSendResponse(): " + sData);
+                aobjResponse.setHeader("responseMsg", sTemp);
+                logger.warning("prepareSendResponse(): " + sTemp);
             }
         }
         aobjResponse.setStatus(aobjResult.iResultWeb);
@@ -130,6 +131,7 @@ public class ServiceBaseJson extends ServiceBase {
         }
 
         if (bShouldSendContent) {
+            sData = new StringBuilder();
             if (bIsJsonEnvelopeMode) {
                 //logger.info("prepareSendResponse(): .. it is Envelope response ..");
                 if (aobjResult.sText.toUpperCase().contentEquals(ConstGlobal.DEFINE_STR_OK)) {
@@ -145,19 +147,20 @@ public class ServiceBaseJson extends ServiceBase {
                 }
 
                 if (bIsJsonPrettyPrintMode) {
-                    sData = objJsonResponseEnv.toString(WriterConfig.PRETTY_PRINT);
+                    sData.append(objJsonResponseEnv.toString(WriterConfig.PRETTY_PRINT));
                 } else {
-                    sData = objJsonResponseEnv.toString();
+                    sData.append(objJsonResponseEnv.toString());
                 }
             } else {
                 if (bIsJsonPrettyPrintMode) {
-                    if (aarrData != null) sData = aarrData.toString(WriterConfig.PRETTY_PRINT);
+                    if (aarrData != null) sData.append(aarrData.toString(WriterConfig.PRETTY_PRINT));
                 } else {
-                    if (aarrData != null) sData = aarrData.toString();
+                    if (aarrData != null) sData.append(aarrData.toString());
                 }
             }
+            sData.append("  ");
         }
-        iResult = sendResponse(aobjResponse, sData);
+        iResult = sendResponse(aobjResponse, sData.toString());
         return iResult;
     }
 
@@ -168,7 +171,8 @@ public class ServiceBaseJson extends ServiceBase {
         // Local variables
         int             iResult;
         boolean         bShouldSendContent = true;
-        String          sData = null;
+        String          sTemp = null;
+        StringBuilder   sData = null;
         Date            dtNow = new Date();
         JsonObject      objJsonResponseEnv = null;
 
@@ -179,10 +183,10 @@ public class ServiceBaseJson extends ServiceBase {
         if (aobjResult.iResultWeb == HttpServletResponse.SC_NO_CONTENT) {
             bShouldSendContent = false;
             if ((aobjData != null) || (bIsJsonEnvelopeMode)) {
-                sData = "(HTTP)ResponseCode is set to: " + aobjResult.iResultWeb
+                sTemp = "(HTTP)ResponseCode is set to: " + aobjResult.iResultWeb
                         + " and response data is provided, which will NOT be send to client as Code indicate: NO DATA!";
-                aobjResponse.setHeader("responseMsg", sData);
-                logger.warning("prepareSendResponse(): " + sData);
+                aobjResponse.setHeader("responseMsg", sTemp);
+                logger.warning("prepareSendResponse(): " + sTemp);
             }
         }
         aobjResponse.setStatus(aobjResult.iResultWeb);
@@ -192,6 +196,7 @@ public class ServiceBaseJson extends ServiceBase {
         }
 
         if (bShouldSendContent) {
+            sData = new StringBuilder();
             if (bIsJsonEnvelopeMode) {
                 //logger.info("prepareSendResponse(): .. it is Envelope response ..");
                 if (aobjResult.sText.toUpperCase().contentEquals(ConstGlobal.DEFINE_STR_OK)) {
@@ -207,19 +212,20 @@ public class ServiceBaseJson extends ServiceBase {
                 }
 
                 if (bIsJsonPrettyPrintMode) {
-                    sData = objJsonResponseEnv.toString(WriterConfig.PRETTY_PRINT);
+                    sData.append(objJsonResponseEnv.toString(WriterConfig.PRETTY_PRINT));
                 } else {
-                    sData = objJsonResponseEnv.toString();
+                    sData.append(objJsonResponseEnv.toString());
                 }
             } else {
                 if (bIsJsonPrettyPrintMode) {
-                    if (aobjData != null) sData = aobjData.toString(WriterConfig.PRETTY_PRINT);
+                    if (aobjData != null) sData.append(aobjData.toString(WriterConfig.PRETTY_PRINT));
                 } else {
-                    if (aobjData != null) sData = aobjData.toString();
+                    if (aobjData != null) sData.append(aobjData.toString());
                 }
             }
+            sData.append("  ");
         }
-        iResult = sendResponse(aobjResponse, sData);
+        iResult = sendResponse(aobjResponse, sData.toString());
         return iResult;
     }
 
