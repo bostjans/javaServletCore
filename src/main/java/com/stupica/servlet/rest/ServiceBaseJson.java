@@ -160,7 +160,11 @@ public class ServiceBaseJson extends ServiceBase {
             }
             sData.append("  ");
         }
-        iResult = sendResponse(aobjResponse, sData.toString());
+        if (sData == null) {
+            iResult = sendResponse(aobjResponse, null);
+        } else {
+            iResult = sendResponse(aobjResponse, sData.toString());
+        }
         return iResult;
     }
 
@@ -225,7 +229,11 @@ public class ServiceBaseJson extends ServiceBase {
             }
             sData.append("  ");
         }
-        iResult = sendResponse(aobjResponse, sData.toString());
+        if (sData == null) {
+            iResult = sendResponse(aobjResponse, null);
+        } else {
+            iResult = sendResponse(aobjResponse, sData.toString());
+        }
         return iResult;
     }
 
