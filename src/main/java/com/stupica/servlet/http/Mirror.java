@@ -43,7 +43,7 @@ public class Mirror extends ServiceBase {
      * @apiSuccessExample {text} Success-Response:
      *     HTTP/1.1 200 OK
      *
-     *     OK
+     *     ..
      *
      * @apiSampleRequest /mirror/v1/
      *
@@ -56,6 +56,7 @@ public class Mirror extends ServiceBase {
         int             iResult;
         String              sMsgLog = null;
         String              headers = "";
+        StringBuilder       headersLong = new StringBuilder();
         Enumeration<String> headerNames = null;
         PrintWriter     objOut = null;
         ResultProces    objResult;
@@ -84,7 +85,13 @@ public class Mirror extends ServiceBase {
                 String headerName = headerNames.nextElement();
                 headers = headers + "Header Name: " + headerName;
                 String headerValue = request.getHeader(headerName);
-                headers = headers + ", Header Value: " + headerValue;
+                if (headerValue.length() > 80) {
+                    headersLong.append("\nHeader Name: ").append(headerName);
+                    headersLong.append("\n\tValue: ").append(headerValue);
+                    headers = headers + "\n\tValue: " + headerValue.substring(0, 77) + " ..";
+                } else {
+                    headers = headers + "\n\tValue: " + headerValue;
+                }
                 headers = headers + "\n";
             }
         }
@@ -120,6 +127,10 @@ public class Mirror extends ServiceBase {
 
             objOut.println("\n--");
             objOut.println(headers);
+            if (headersLong.length() > 0) {
+                objOut.println("\n--");
+                objOut.println(headersLong.toString());
+            }
         }
 
         // Check previous step
@@ -131,9 +142,10 @@ public class Mirror extends ServiceBase {
                 X500Principal subjectX500Principal = x509Certificate.getSubjectX500Principal();
                 String dn = subjectX500Principal.getName();
                 x509Certificate.getSerialNumber();
-                sMsgLog = "javax.servlet.request.X509Certificate (serial):" + x509Certificate.getSerialNumber().toString(16) + "\n" + dn;
+                sMsgLog = "javax.servlet.request.X509Certificate (serial): " + x509Certificate.getSerialNumber().toString(16)
+                        + "\n\t" + dn;
             } else {
-                sMsgLog = "Nismo prejeli client certifikata.";
+                sMsgLog = "Nismo prejeli klient (client) certifikata.";
             }
             logger.info(sMsgLog);
             objOut.println(sMsgLog);
@@ -146,7 +158,8 @@ public class Mirror extends ServiceBase {
             if (clientCert != null) {
                 String sslClientSerial = clientCert.getSerialNumber().toString(16);
                 objOut.println("--");
-                objOut.println("SSL_CLIENT_CERT:" + sslClientSerial);
+                objOut.println("SSL_CLIENT_CERT: " + sslClientSerial
+                        + "\n\t" + clientCert.getSubjectX500Principal().getName());
                 logger.info("SSL_CLIENT_CERT:" + sslClientSerial);
             }
         }
@@ -158,7 +171,8 @@ public class Mirror extends ServiceBase {
             if (clientCertVS != null) {
                 String sslClientSerial = clientCertVS.getSerialNumber().toString(16);
                 objOut.println("--");
-                objOut.println("SSL_CLIENT_CERT_VS:" + sslClientSerial);
+                objOut.println("SSL_CLIENT_CERT_VS: " + sslClientSerial
+                        + "\n\t" + clientCertVS.getSubjectX500Principal().getName());
             }
         }
 
