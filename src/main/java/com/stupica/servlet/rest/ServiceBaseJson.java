@@ -56,15 +56,20 @@ public class ServiceBaseJson extends ServiceBase {
         }
         objJsonResponseHeader.add("resultMsg", sTemp);
         objJsonResponseHeader.add("resultCount", 0);
-        if (!UtilString.isEmpty(asMsg))
-            objJsonResponseHeader.add("msg", asMsg);
+        if (!UtilString.isEmpty(asMsg)) {
+            if (aiResult >= ConstGlobal.RETURN_WARN) {
+                objJsonResponseHeader.add("msg", asMsg);
+            } else {
+                objJsonResponseHeader.add("msg", "Check -> Resolve Error Msg.!");
+            }
+        }
         if (!UtilString.isEmpty(asDesc))
             objJsonResponseHeader.add("description", asDesc);
         objJsonResponseHeader.add("timestamp", adtTrasfer.getTime());
         objJsonResponseHeader.add("timestampStr", UtilDate.toUniversalString(adtTrasfer));
-        if (aiResult != ConstGlobal.RETURN_OK) {
+        if (aiResult < ConstGlobal.RETURN_WARN) {
             objJsonResponseHeader.add("errorCode", aiResult);
-            objJsonResponseHeader.add("errorMsg", "/");
+            objJsonResponseHeader.add("errorMsg", asMsg);
         }
         //objJsonResponseHeader.add("errorDetail", objJsonResponseErrorDetail);
         objJsonResponseHeader.add("status", asStatus);
@@ -135,9 +140,11 @@ public class ServiceBaseJson extends ServiceBase {
             if (bIsJsonEnvelopeMode) {
                 //logger.info("prepareSendResponse(): .. it is Envelope response ..");
                 if (aobjResult.sText.toUpperCase().contentEquals(ConstGlobal.DEFINE_STR_OK)) {
-                    objJsonResponseEnv = getResponseEnvObject(iResult, aobjResult.sText, null, aobjResult.sMsg.toString(), dtNow);
+                    objJsonResponseEnv = getResponseEnvObject(aobjResult.iResult, aobjResult.sText,
+                            null, aobjResult.sMsg.toString(), dtNow);
                 } else {
-                    objJsonResponseEnv = getResponseEnvObject(iResult, aobjResult.sText, aobjResult.sMsg.toString(), null, dtNow);
+                    objJsonResponseEnv = getResponseEnvObject(aobjResult.iResult, aobjResult.sStatus,
+                            aobjResult.sMsg.toString(), aobjResult.sText, dtNow);
                 }
                 if (aarrData == null) {
                     //objJsonResponseEnv.add("data", "{}");
@@ -204,9 +211,11 @@ public class ServiceBaseJson extends ServiceBase {
             if (bIsJsonEnvelopeMode) {
                 //logger.info("prepareSendResponse(): .. it is Envelope response ..");
                 if (aobjResult.sText.toUpperCase().contentEquals(ConstGlobal.DEFINE_STR_OK)) {
-                    objJsonResponseEnv = getResponseEnvObject(iResult, aobjResult.sText, null, aobjResult.sMsg.toString(), dtNow);
+                    objJsonResponseEnv = getResponseEnvObject(aobjResult.iResult, aobjResult.sText,
+                            null, aobjResult.sMsg.toString(), dtNow);
                 } else {
-                    objJsonResponseEnv = getResponseEnvObject(iResult, aobjResult.sText, aobjResult.sMsg.toString(), null, dtNow);
+                    objJsonResponseEnv = getResponseEnvObject(aobjResult.iResult, aobjResult.sStatus,
+                            aobjResult.sMsg.toString(), aobjResult.sText, dtNow);
                 }
                 if (aobjData == null) {
                     //objJsonResponseEnv.add("data", "{}");

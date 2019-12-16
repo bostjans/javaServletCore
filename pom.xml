@@ -6,7 +6,7 @@
 
     <groupId>com.stupica.base</groupId>
     <artifactId>servletCore</artifactId>
-    <version>1.9.0</version>
+    <version>1.9.1</version>
     <packaging>jar</packaging>
     <name>servletCore</name>
     <organization>
@@ -35,7 +35,7 @@
             <!-- coordinates of the required library -->
             <groupId>com.stupica.base</groupId>
             <artifactId>globalVar</artifactId>
-            <version>1.4.3</version>
+            <version>1.4.5</version>
         </dependency>
 
         <dependency>
