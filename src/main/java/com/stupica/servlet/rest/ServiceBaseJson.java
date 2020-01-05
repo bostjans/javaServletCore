@@ -108,6 +108,9 @@ public class ServiceBaseJson extends ServiceBase {
         // Initialization
         iResult = ConstGlobal.RETURN_OK;
 
+        if (UtilString.isEmpty(aobjResult.sText)) {
+            aobjResult.sText = ConstGlobal.DEFINE_STR_NOVALUE;
+        }
         //logger.info("prepareSendResponse(): Set response status ..");
         if (aobjResult.iResultWeb == HttpServletResponse.SC_NO_CONTENT) {
             bShouldSendContent = false;
@@ -138,7 +141,6 @@ public class ServiceBaseJson extends ServiceBase {
         if (bShouldSendContent) {
             sData = new StringBuilder();
             if (bIsJsonEnvelopeMode) {
-                //logger.info("prepareSendResponse(): .. it is Envelope response ..");
                 if (aobjResult.sText.toUpperCase().contentEquals(ConstGlobal.DEFINE_STR_OK)) {
                     objJsonResponseEnv = getResponseEnvObject(aobjResult.iResult, aobjResult.sText,
                             null, aobjResult.sMsg.toString(), dtNow);
@@ -147,7 +149,6 @@ public class ServiceBaseJson extends ServiceBase {
                             aobjResult.sMsg.toString(), aobjResult.sText, dtNow);
                 }
                 if (aarrData == null) {
-                    //objJsonResponseEnv.add("data", "{}");
                     objJsonResponseEnv.add("data", Json.object());
                 } else {
                     objJsonResponseEnv.add("data", aarrData);
@@ -190,6 +191,10 @@ public class ServiceBaseJson extends ServiceBase {
         // Initialization
         iResult = ConstGlobal.RETURN_OK;
 
+        if (UtilString.isEmpty(aobjResult.sText)) {
+            aobjResult.sText = ConstGlobal.DEFINE_STR_NOVALUE;
+        }
+
         //logger.info("prepareSendResponse(): Set response status ..");
         if (aobjResult.iResultWeb == HttpServletResponse.SC_NO_CONTENT) {
             bShouldSendContent = false;
@@ -209,7 +214,6 @@ public class ServiceBaseJson extends ServiceBase {
         if (bShouldSendContent) {
             sData = new StringBuilder();
             if (bIsJsonEnvelopeMode) {
-                //logger.info("prepareSendResponse(): .. it is Envelope response ..");
                 if (aobjResult.sText.toUpperCase().contentEquals(ConstGlobal.DEFINE_STR_OK)) {
                     objJsonResponseEnv = getResponseEnvObject(aobjResult.iResult, aobjResult.sText,
                             null, aobjResult.sMsg.toString(), dtNow);
