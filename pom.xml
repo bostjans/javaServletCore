@@ -6,7 +6,7 @@
 
     <groupId>com.stupica.base</groupId>
     <artifactId>servletCore</artifactId>
-    <version>1.9.1</version>
+    <version>1.9.2</version>
     <packaging>jar</packaging>
     <name>servletCore</name>
     <organization>
@@ -35,22 +35,18 @@
             <!-- coordinates of the required library -->
             <groupId>com.stupica.base</groupId>
             <artifactId>globalVar</artifactId>
-            <version>1.4.5</version>
+            <version>[1,2)</version>
         </dependency>
 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.1</version>
+            <version>[4.13,4.14)</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
-		<!--
-        <finalName>lenkoTrRestApi</finalName>
-        -->
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -71,7 +67,7 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ftp</artifactId>
-                <version>3.3.1</version>
+                <version>[3.3,3.4)</version>
             </extension>
         </extensions>
     </build>
