@@ -23,6 +23,8 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.logging.Logger;
 
+import static com.stupica.ConstGlobal.DEFINE_STR_NEWLINE;
+
 
 /**
  * Created by bostjans on 16/09/16.
@@ -31,6 +33,126 @@ public class Mirror extends ServiceBase {
 
     private static Logger logger = Logger.getLogger(Mirror.class.getName());
 
+
+    protected String getReportText(HttpServletRequest request, String asMethod) {
+        // Local variables
+        int             iResult;
+        String              sMsgLog = null;
+        String              headers = "";
+        StringBuilder       headersLong = new StringBuilder();
+        Enumeration<String> headerNames = null;
+        StringBuilder   sHttpData = new StringBuilder();
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            headers = "Header(s): \n";
+            headerNames = request.getHeaderNames();
+            while (headerNames.hasMoreElements()) {
+                String headerName = headerNames.nextElement();
+                headers = headers + "  " + headerName + " :\t";
+                String headerValue = request.getHeader(headerName);
+                if (headerValue.length() > 80) {
+                    headersLong.append("\nHeader Name: ").append(headerName);
+                    headersLong.append("\n\tValue: ").append(headerValue);
+                    headers = headers + headerValue.substring(0, 77) + " ..";
+                } else {
+                    headers = headers + headerValue;
+                }
+                headers = headers + "\n";
+            }
+        }
+
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            sHttpData.append("--").append(DEFINE_STR_NEWLINE);
+            sHttpData.append(".. HTTP Mirror").append(DEFINE_STR_NEWLINE);
+            sHttpData.append("--").append(DEFINE_STR_NEWLINE);
+
+            //long currentTimeMillis = System.currentTimeMillis();
+            Date    dtNow = new Date();
+            String requestIdent = "IdAccess/IdDostopa: " + dtNow.getTime();
+            logger.info("doGet(): " + requestIdent);
+            logger.fine(headers);
+            sHttpData.append(requestIdent);
+            sHttpData.append("\t\t-> TimeStamp: ").append(UtilDate.toUniversalString(dtNow)).append(DEFINE_STR_NEWLINE);
+            sHttpData.append("Method: ").append(asMethod).append(DEFINE_STR_NEWLINE);
+            sHttpData.append(DEFINE_STR_NEWLINE);
+            sHttpData.append("--").append(DEFINE_STR_NEWLINE);
+            sHttpData.append("AuthType:\t").append(request.getAuthType()).append(DEFINE_STR_NEWLINE);
+            sHttpData.append("ContextPath:\t").append(request.getContextPath()).append(DEFINE_STR_NEWLINE);
+            sHttpData.append("PathInfo:\t").append(request.getPathInfo()).append(DEFINE_STR_NEWLINE);
+            sHttpData.append("RemoteUser:\t").append(request.getRemoteUser()).append(DEFINE_STR_NEWLINE);
+            sHttpData.append("RequestedSessionId:\t").append(request.getRequestedSessionId()).append(DEFINE_STR_NEWLINE);
+            sHttpData.append("RequestURI:\t").append(request.getRequestURI()).append(DEFINE_STR_NEWLINE);
+            sHttpData.append("RemoteAddr:\t").append(request.getRemoteAddr()).append(DEFINE_STR_NEWLINE);
+            sHttpData.append("RemoteHost:\t").append(request.getRemoteHost()).append("\t\t");
+            sHttpData.append("RemotePort:\t").append(request.getRemotePort()).append(DEFINE_STR_NEWLINE);
+            sHttpData.append("Scheme:\t").append(request.getScheme()).append(DEFINE_STR_NEWLINE);
+            sHttpData.append("ServerName:\t").append(request.getServerName()).append("\t\t");
+            sHttpData.append("ServerPort:\t").append(request.getServerPort()).append(DEFINE_STR_NEWLINE);
+            sHttpData.append("SessionId:\t").append(request.getSession().getId()).append(DEFINE_STR_NEWLINE);
+            sHttpData.append("\t").append(request.getSession()).append(DEFINE_STR_NEWLINE);
+
+            sHttpData.append(DEFINE_STR_NEWLINE).append("--").append(DEFINE_STR_NEWLINE);
+            sHttpData.append(headers);
+            if (headersLong.length() > 0) {
+                sHttpData.append("--").append(DEFINE_STR_NEWLINE);
+                sHttpData.append(headersLong.toString()).append(DEFINE_STR_NEWLINE);
+            }
+        }
+
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            sHttpData.append("--").append(DEFINE_STR_NEWLINE);
+            X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+            if (certs != null) {
+                X509Certificate x509Certificate = certs[0];
+                X500Principal subjectX500Principal = x509Certificate.getSubjectX500Principal();
+                String dn = subjectX500Principal.getName();
+                x509Certificate.getSerialNumber();
+                sMsgLog = "javax.servlet.request.X509Certificate (serial): " + x509Certificate.getSerialNumber().toString(16)
+                        + "\n\t" + dn;
+            } else {
+                sMsgLog = "Nismo prejeli klient (client) certifikata.";
+            }
+            logger.info(sMsgLog);
+            sHttpData.append(DEFINE_STR_NEWLINE).append(sMsgLog).append(DEFINE_STR_NEWLINE);
+        }
+
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            String clientCertString = request.getHeader("SSL_CLIENT_CERT");
+            X509Certificate clientCert = createCertificateFromString(clientCertString);
+            if (clientCert != null) {
+                String sslClientSerial = clientCert.getSerialNumber().toString(16);
+                sHttpData.append("--").append(DEFINE_STR_NEWLINE);
+                sHttpData.append("SSL_CLIENT_CERT: ").append(sslClientSerial).append(DEFINE_STR_NEWLINE);
+                sHttpData.append("\t").append(clientCert.getSubjectX500Principal().getName()).append(DEFINE_STR_NEWLINE);
+                logger.info("SSL_CLIENT_CERT:" + sslClientSerial);
+            }
+        }
+
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            String clientCertVSString = request.getHeader("SSL_CLIENT_CERT_VS");
+            X509Certificate clientCertVS = createCertificateFromString(clientCertVSString);
+            if (clientCertVS != null) {
+                String sslClientSerial = clientCertVS.getSerialNumber().toString(16);
+                sHttpData.append("--").append(DEFINE_STR_NEWLINE);
+                sHttpData.append("SSL_CLIENT_CERT_VS: ").append(sslClientSerial).append(DEFINE_STR_NEWLINE);
+                sHttpData.append("\t").append(clientCertVS.getSubjectX500Principal().getName()).append(DEFINE_STR_NEWLINE);
+            }
+        }
+
+        sHttpData.append(DEFINE_STR_NEWLINE).append("--").append(DEFINE_STR_NEWLINE);
+        sHttpData.append(DEFINE_STR_NEWLINE).append(DEFINE_STR_NEWLINE);
+        sHttpData.append("-- End of report. --<");
+
+        return sHttpData.toString();
+    }
 
     /**
      * @api {get} /mirror/v1/ Mirror
@@ -54,10 +176,7 @@ public class Mirror extends ServiceBase {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // Local variables
         int             iResult;
-        String              sMsgLog = null;
-        String              headers = "";
-        StringBuilder       headersLong = new StringBuilder();
-        Enumeration<String> headerNames = null;
+        String          sHttpData = null;
         PrintWriter     objOut = null;
         ResultProces    objResult;
 
@@ -80,107 +199,22 @@ public class Mirror extends ServiceBase {
             response.setContentType("text/plain; charset=UTF-8");
             response.setCharacterEncoding("UTF-8");
 
-            headerNames = request.getHeaderNames();
-            while (headerNames.hasMoreElements()) {
-                String headerName = headerNames.nextElement();
-                headers = headers + "Header Name: " + headerName;
-                String headerValue = request.getHeader(headerName);
-                if (headerValue.length() > 80) {
-                    headersLong.append("\nHeader Name: ").append(headerName);
-                    headersLong.append("\n\tValue: ").append(headerValue);
-                    headers = headers + "\n\tValue: " + headerValue.substring(0, 77) + " ..";
-                } else {
-                    headers = headers + "\n\tValue: " + headerValue;
-                }
-                headers = headers + "\n";
-            }
+            sHttpData = getReportText(request, "GET");
         }
 
         // Check previous step
         if (iResult == ConstGlobal.RETURN_OK) {
             objOut = response.getWriter();
+            if (objOut == null) {
+                iResult = ConstGlobal.RETURN_ERROR;
+            }
             //objOut.println("<pre>");
-            objOut.println("--");
-            objOut.println(".. simple HTTP Mirror");
-            objOut.println("--");
-
-            //long currentTimeMillis = System.currentTimeMillis();
-            Date    dtNow = new Date();
-            String requestIdent = "IdDostopa: " + dtNow.getTime();
-            logger.info("doGet(): " + requestIdent);
-            logger.fine(headers);
-            objOut.println("doGet(): " + requestIdent + "\t\t-> Datum: " + UtilDate.toUniversalString(dtNow) + " \n");
-            objOut.println("--");
-            objOut.println("AuthType:\t" + request.getAuthType());
-            objOut.println("ContextPath:\t" + request.getContextPath());
-            objOut.println("PathInfo:\t" + request.getPathInfo());
-            objOut.println("RemoteUser:\t" + request.getRemoteUser());
-            objOut.println("RequestedSessionId: " + request.getRequestedSessionId());
-            objOut.println("RequestURI:\t" + request.getRequestURI());
-            objOut.println("RemoteAddr:\t" + request.getRemoteAddr());
-            objOut.println("RemoteHost:\t" + request.getRemoteHost());
-            objOut.println("RemotePort:\t" + request.getRemotePort());
-            objOut.println("Scheme:\t" + request.getScheme());
-            objOut.println("ServerName:\t" + request.getServerName());
-            objOut.println("ServerPort:\t" + request.getServerPort());
-            objOut.println("SessionId:\t" + request.getSession().getId());
-
-            objOut.println("\n--");
-            objOut.println(headers);
-            if (headersLong.length() > 0) {
-                objOut.println("\n--");
-                objOut.println(headersLong.toString());
-            }
         }
-
-        // Check previous step
-        if (iResult == ConstGlobal.RETURN_OK) {
-            objOut.println("--");
-            X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-            if (certs != null) {
-                X509Certificate x509Certificate = certs[0];
-                X500Principal subjectX500Principal = x509Certificate.getSubjectX500Principal();
-                String dn = subjectX500Principal.getName();
-                x509Certificate.getSerialNumber();
-                sMsgLog = "javax.servlet.request.X509Certificate (serial): " + x509Certificate.getSerialNumber().toString(16)
-                        + "\n\t" + dn;
-            } else {
-                sMsgLog = "Nismo prejeli klient (client) certifikata.";
-            }
-            logger.info(sMsgLog);
-            objOut.println(sMsgLog);
-        }
-
-        // Check previous step
-        if (iResult == ConstGlobal.RETURN_OK) {
-            String clientCertString = request.getHeader("SSL_CLIENT_CERT");
-            X509Certificate clientCert = createCertificateFromString(clientCertString);
-            if (clientCert != null) {
-                String sslClientSerial = clientCert.getSerialNumber().toString(16);
-                objOut.println("--");
-                objOut.println("SSL_CLIENT_CERT: " + sslClientSerial
-                        + "\n\t" + clientCert.getSubjectX500Principal().getName());
-                logger.info("SSL_CLIENT_CERT:" + sslClientSerial);
-            }
-        }
-
-        // Check previous step
-        if (iResult == ConstGlobal.RETURN_OK) {
-            String clientCertVSString = request.getHeader("SSL_CLIENT_CERT_VS");
-            X509Certificate clientCertVS = createCertificateFromString(clientCertVSString);
-            if (clientCertVS != null) {
-                String sslClientSerial = clientCertVS.getSerialNumber().toString(16);
-                objOut.println("--");
-                objOut.println("SSL_CLIENT_CERT_VS: " + sslClientSerial
-                        + "\n\t" + clientCertVS.getSubjectX500Principal().getName());
-            }
-        }
-
-        objOut.write("\n");
-        objOut.println("--");
         //objOut.println("</pre>");
-        objOut.write("\n\nThis is addOn info. ..");
-
+        if (objOut != null) {
+            objOut.write("\n");
+            objOut.write(sHttpData);
+        }
         if (objOut != null) {
             objOut.close();
         }

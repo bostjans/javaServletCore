@@ -6,7 +6,7 @@
 
     <groupId>com.stupica.base</groupId>
     <artifactId>servletCore</artifactId>
-    <version>1.9.2</version>
+    <version>1.9.3</version>
     <packaging>jar</packaging>
     <name>servletCore</name>
     <organization>
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>com.eclipsesource.minimal-json</groupId>
             <artifactId>minimal-json</artifactId>
-            <version>0.9.5</version>
+            <version>[0.9.5,1)</version>
         </dependency>
 
         <dependency>
