@@ -20,8 +20,6 @@ public class ServiceMirror {
     private int         iCountCache = 0;
     String[]            arrCache = null;
 
-    //ServiceMirrorObservable objNotifyObservable = new ServiceMirrorObservable();
-
 
     private ServiceMirror() {
         if (isEnabled) {
@@ -50,7 +48,6 @@ public class ServiceMirror {
             arrCache[iCountCache++] = asHttpData;
             if (iCountCache == iCountMaxCache) iCountCache = 0;
         }
-        //objNotifyObservable.setHttpData(sHttpData.toString());
         return iResult;
     }
 

@@ -51,54 +51,9 @@ public class Mirror extends ServiceBase {
      * @apiSampleRequest /mirror/v1/
      *
      * @apiExample {curl} Example usage:
-     *     curl -i http://localhost:8080/lenkoRest/mirror/v1/
-     *     curl -i http://localhost:8080/lenkoTrRest/mirror/v1/
+     *     curl -i --insecure https://localhost:11443/mirror/v1
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        /* // Local variables
-        int             iResult;
-        String          sHttpData = null;
-        PrintWriter     objOut = null;
-        ResultProces    objResult;
-
-        // Initialization
-        iResult = ConstGlobal.RETURN_OK;
-        bVerifyReferal = false;
-        objResult = new ResultProces();
-
-        super.doGet(request, response);
-
-        // Check ..
-        if (response.getStatus() != ConstWeb.HTTP_RESP_OK) {
-            iResult = response.getStatus();
-            objResult.sText = "doGet(): StatusCode indicates error in prior verification! Status: " + response.getStatus();
-            logger.warning(objResult.sText);
-        }
-
-        // Check previous step
-        if (iResult == ConstGlobal.RETURN_OK) {
-            response.setContentType("text/plain; charset=UTF-8");
-            response.setCharacterEncoding("UTF-8");
-
-            sHttpData = getReportText(request, "GET");
-        }
-
-        // Check previous step
-        if (iResult == ConstGlobal.RETURN_OK) {
-            objOut = response.getWriter();
-            if (objOut == null) {
-                iResult = ConstGlobal.RETURN_ERROR;
-            }
-            //objOut.println("<pre>");
-        }
-        //objOut.println("</pre>");
-        if (objOut != null) {
-            objOut.write(DEFINE_STR_NEWLINE);
-            objOut.write(sHttpData);
-        }
-        if (objOut != null) {
-            objOut.close();
-        } */
         doRequest("GET", request, response);
     }
 
@@ -118,11 +73,32 @@ public class Mirror extends ServiceBase {
      * @apiSampleRequest /mirror/v1/
      *
      * @apiExample {curl} Example usage:
-     *     curl -i -X PUT http://localhost:8080/lenkoRest/mirror/v1/
-     *     curl -i -X PUT http://localhost:8080/lenkoTrRest/mirror/v1/
+     *     curl -i -X PUT --insecure https://localhost:11443/mirror/v1
      */
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doRequest("PUT", request, response);
+    }
+
+    /**
+     * @api {post} /mirror/v1/ Mirror
+     * @apiName Mirror
+     * @apiGroup Monitor
+     * @apiVersion 1.0.0
+     * @apiPermission none
+     * @apiDescription Web method to monitor system status/accessibility.
+     *
+     * @apiSuccessExample {text} Success-Response:
+     *     HTTP/1.1 200 OK
+     *
+     *     ..
+     *
+     * @apiSampleRequest /mirror/v1/
+     *
+     * @apiExample {curl} Example usage:
+     *     curl -i -X POST --insecure https://localhost:11443/mirror/v1
+     */
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doRequest("POST", request, response);
     }
 
     protected void doRequest(String asMethod, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -301,8 +277,6 @@ public class Mirror extends ServiceBase {
 
         // Notify Service
         ServiceMirror.getInstance().notifyOnRequest(sHttpData.toString());
-        //ServiceMirrorObservable objNotifyObservable = new ServiceMirrorObservable();
-        //objNotifyObservable.setHttpData(sHttpData.toString());
         return sHttpData.toString();
     }
 
