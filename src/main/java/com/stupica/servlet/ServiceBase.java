@@ -14,6 +14,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import static com.stupica.ConstWeb.HTTP_METHOD_NAME_GET;
+import static com.stupica.ConstWeb.HTTP_METHOD_NAME_PUT;
+
 
 /**
  * Created by bostjans on 16/09/16.
@@ -148,7 +151,7 @@ public class ServiceBase extends HttpServlet {
             // CORS (Access-Control-Allow-Origin)
             response.addHeader("Access-Control-Allow-Origin", "*");
             //response.addHeader("Access-Control-Allow-Methods", "PUT, POST");
-            response.addHeader("Access-Control-Allow-Methods", "GET, PUT");
+            response.addHeader("Access-Control-Allow-Methods", HTTP_METHOD_NAME_GET + ", " + HTTP_METHOD_NAME_PUT);
             //response.addHeader("Access-Control-Allow-Headers", "Content-Type");
             response.addHeader("Access-Control-Allow-Headers",
                     "Content-Type, " + ConstWeb.HTTP_HEADER_NAME_OECOMP + ", " + ConstWeb.HTTP_HEADER_NAME_USERNAME);
