@@ -7,6 +7,7 @@ import com.stupica.ResultProces;
 import com.stupica.core.UtilDate;
 import com.stupica.core.UtilString;
 import com.stupica.servlet.ServiceBase;
+import com.stupica.servlet.ServiceMirror;
 
 import javax.security.auth.x500.X500Principal;
 import javax.servlet.ServletException;
@@ -34,6 +35,153 @@ public class Mirror extends ServiceBase {
     private static Logger logger = Logger.getLogger(Mirror.class.getName());
 
 
+    /**
+     * @api {get} /mirror/v1/ Mirror
+     * @apiName Mirror
+     * @apiGroup Monitor
+     * @apiVersion 1.0.0
+     * @apiPermission none
+     * @apiDescription Web method to monitor system status/accessibility.
+     *
+     * @apiSuccessExample {text} Success-Response:
+     *     HTTP/1.1 200 OK
+     *
+     *     ..
+     *
+     * @apiSampleRequest /mirror/v1/
+     *
+     * @apiExample {curl} Example usage:
+     *     curl -i http://localhost:8080/lenkoRest/mirror/v1/
+     *     curl -i http://localhost:8080/lenkoTrRest/mirror/v1/
+     */
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        /* // Local variables
+        int             iResult;
+        String          sHttpData = null;
+        PrintWriter     objOut = null;
+        ResultProces    objResult;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+        bVerifyReferal = false;
+        objResult = new ResultProces();
+
+        super.doGet(request, response);
+
+        // Check ..
+        if (response.getStatus() != ConstWeb.HTTP_RESP_OK) {
+            iResult = response.getStatus();
+            objResult.sText = "doGet(): StatusCode indicates error in prior verification! Status: " + response.getStatus();
+            logger.warning(objResult.sText);
+        }
+
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            response.setContentType("text/plain; charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
+
+            sHttpData = getReportText(request, "GET");
+        }
+
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            objOut = response.getWriter();
+            if (objOut == null) {
+                iResult = ConstGlobal.RETURN_ERROR;
+            }
+            //objOut.println("<pre>");
+        }
+        //objOut.println("</pre>");
+        if (objOut != null) {
+            objOut.write(DEFINE_STR_NEWLINE);
+            objOut.write(sHttpData);
+        }
+        if (objOut != null) {
+            objOut.close();
+        } */
+        doRequest("GET", request, response);
+    }
+
+    /**
+     * @api {put} /mirror/v1/ Mirror
+     * @apiName Mirror
+     * @apiGroup Monitor
+     * @apiVersion 1.0.0
+     * @apiPermission none
+     * @apiDescription Web method to monitor system status/accessibility.
+     *
+     * @apiSuccessExample {text} Success-Response:
+     *     HTTP/1.1 200 OK
+     *
+     *     ..
+     *
+     * @apiSampleRequest /mirror/v1/
+     *
+     * @apiExample {curl} Example usage:
+     *     curl -i -X PUT http://localhost:8080/lenkoRest/mirror/v1/
+     *     curl -i -X PUT http://localhost:8080/lenkoTrRest/mirror/v1/
+     */
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doRequest("PUT", request, response);
+    }
+
+    protected void doRequest(String asMethod, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Local variables
+        int             iResult;
+        String          sHttpData = null;
+        PrintWriter     objOut = null;
+        ResultProces    objResult;
+
+        // Initialization
+        iResult = ConstGlobal.RETURN_OK;
+        bVerifyReferal = false;
+        objResult = new ResultProces();
+
+        if (asMethod.contentEquals("GET")) {
+            super.doGet(request, response);
+        } else if (asMethod.contentEquals("PUT")) {
+            super.doPut(request, response);
+        } else {
+            iResult = response.getStatus();
+            objResult.sText = "doRequest(): Unknown method! asMethod: " + asMethod;
+            logger.warning(objResult.sText);
+            response.setStatus(ConstWeb.HTTP_RESP_NOT_FOUND);
+        }
+
+        // Check ..
+        if (response.getStatus() != ConstWeb.HTTP_RESP_OK) {
+            iResult = response.getStatus();
+            objResult.sText = "doGet(): StatusCode indicates error in prior verification! Status: " + response.getStatus();
+            logger.warning(objResult.sText);
+        }
+
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            response.setContentType("text/plain; charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
+
+            sHttpData = getReportText(request, "GET");
+        }
+
+        // Check previous step
+        if (iResult == ConstGlobal.RETURN_OK) {
+            objOut = response.getWriter();
+            if (objOut == null) {
+                iResult = ConstGlobal.RETURN_ERROR;
+            }
+            //objOut.println("<pre>");
+        }
+        //objOut.println("</pre>");
+        if (objOut != null) {
+            objOut.write(DEFINE_STR_NEWLINE);
+            objOut.write(sHttpData);
+        }
+        if (objOut != null) {
+            objOut.close();
+        }
+    }
+
+
     protected String getReportText(HttpServletRequest request, String asMethod) {
         // Local variables
         int             iResult;
@@ -41,7 +189,7 @@ public class Mirror extends ServiceBase {
         String              headers = "";
         StringBuilder       headersLong = new StringBuilder();
         Enumeration<String> headerNames = null;
-        StringBuilder   sHttpData = new StringBuilder();
+        StringBuilder       sHttpData = new StringBuilder();
 
         // Initialization
         iResult = ConstGlobal.RETURN_OK;
@@ -116,7 +264,7 @@ public class Mirror extends ServiceBase {
                 sMsgLog = "javax.servlet.request.X509Certificate (serial): " + x509Certificate.getSerialNumber().toString(16)
                         + "\n\t" + dn;
             } else {
-                sMsgLog = "Nismo prejeli klient (client) certifikata.";
+                sMsgLog = "No (client) certificate received. / Nismo prejeli klient (client) certifikata.";
             }
             logger.info(sMsgLog);
             sHttpData.append(DEFINE_STR_NEWLINE).append(sMsgLog).append(DEFINE_STR_NEWLINE);
@@ -151,75 +299,12 @@ public class Mirror extends ServiceBase {
         sHttpData.append(DEFINE_STR_NEWLINE).append(DEFINE_STR_NEWLINE);
         sHttpData.append("-- End of report. --<");
 
+        // Notify Service
+        ServiceMirror.getInstance().notifyOnRequest(sHttpData.toString());
+        //ServiceMirrorObservable objNotifyObservable = new ServiceMirrorObservable();
+        //objNotifyObservable.setHttpData(sHttpData.toString());
         return sHttpData.toString();
     }
-
-    /**
-     * @api {get} /mirror/v1/ Mirror
-     * @apiName Mirror
-     * @apiGroup Monitor
-     * @apiVersion 1.0.0
-     * @apiPermission none
-     * @apiDescription Web method to monitor system status/accessibility.
-     *
-     * @apiSuccessExample {text} Success-Response:
-     *     HTTP/1.1 200 OK
-     *
-     *     ..
-     *
-     * @apiSampleRequest /mirror/v1/
-     *
-     * @apiExample {curl} Example usage:
-     *     curl -i http://localhost:8080/lenkoRest/mirror/v1/
-     *     curl -i http://localhost:8080/lenkoTrRest/mirror/v1/
-     */
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Local variables
-        int             iResult;
-        String          sHttpData = null;
-        PrintWriter     objOut = null;
-        ResultProces    objResult;
-
-        // Initialization
-        iResult = ConstGlobal.RETURN_OK;
-        bVerifyReferal = false;
-        objResult = new ResultProces();
-
-        super.doGet(request, response);
-
-        // Check ..
-        if (response.getStatus() != ConstWeb.HTTP_RESP_OK) {
-            iResult = response.getStatus();
-            objResult.sText = "doGet(): StatusCode indicates error in prior verification! Status: " + response.getStatus();
-            logger.warning(objResult.sText);
-        }
-
-        // Check previous step
-        if (iResult == ConstGlobal.RETURN_OK) {
-            response.setContentType("text/plain; charset=UTF-8");
-            response.setCharacterEncoding("UTF-8");
-
-            sHttpData = getReportText(request, "GET");
-        }
-
-        // Check previous step
-        if (iResult == ConstGlobal.RETURN_OK) {
-            objOut = response.getWriter();
-            if (objOut == null) {
-                iResult = ConstGlobal.RETURN_ERROR;
-            }
-            //objOut.println("<pre>");
-        }
-        //objOut.println("</pre>");
-        if (objOut != null) {
-            objOut.write("\n");
-            objOut.write(sHttpData);
-        }
-        if (objOut != null) {
-            objOut.close();
-        }
-    }
-
 
     private X509Certificate createCertificateFromString(String certFromSSLClientCertHeader) {
         X509Certificate userCert = null;

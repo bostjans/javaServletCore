@@ -6,7 +6,7 @@
 
     <groupId>com.stupica.base</groupId>
     <artifactId>servletCore</artifactId>
-    <version>1.9.3</version>
+    <version>1.9.4</version>
     <packaging>jar</packaging>
     <name>servletCore</name>
     <organization>
