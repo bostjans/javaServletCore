@@ -95,16 +95,20 @@ public class Setting {
 
         // .. read Properties ..
         readFromXML(is);
+        {
+            final String implementation = getString(PROJECT_NAME, PROJECT_NAME_DEF_VAL);
+            final String environmentType = getString(IMPLEMENTATION_TYPE, IMPLEMENTATION_TYPE_TEST);
+            final String versionInfo = getString(DEFINE_CONF_APP_VERSION, "/");
+            StringBuilder sTemp = new StringBuilder();
 
-        final String implementation = getString(PROJECT_NAME, PROJECT_NAME_DEF_VAL);
-        final String environmentType = getString(IMPLEMENTATION_TYPE, IMPLEMENTATION_TYPE_TEST);
-        final String versionInfo = getString(DEFINE_CONF_APP_VERSION, "/");
-
-        logger.info("\t********************************************************************************\n"
-                + "\t*** App.: " + implementation
-                + "    Env.: " + environmentType
-                + "   Version " + versionInfo + " ***"
-                + "\n\t********************************************************************************");
+            sTemp.append("\t********************************************************************************\n");
+            sTemp.append("\t*** App.: ").append(implementation);
+            sTemp.append("    Env.: ").append(environmentType);
+            sTemp.append("   Version ").append(versionInfo);
+            sTemp.append(" \t***");
+            sTemp.append("\n\t********************************************************************************");
+            logger.info(sTemp.toString());
+        }
     }
 
 
@@ -162,5 +166,20 @@ public class Setting {
             return true;
         }
         return false;
+    }
+
+    public int getInt(String key, int def) {
+        int     iVal = def;
+        String  val = getString(key);
+
+        if (val == null) return def;
+        try {
+            iVal = Integer.parseInt(val);
+        } catch (Exception ex) {
+            logger.severe("Config.getInt(): Error in configuration! Setting: " + key
+                    + " value is NOT integer/number: " + val
+                    + "; Msg.: " + ex.getMessage());
+        }
+        return iVal;
     }
 }

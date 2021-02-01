@@ -370,40 +370,6 @@ public class ServiceBase extends HttpServlet {
     }
 
 
-    /*
-    protected void sendResponse(HttpServletResponse response, int aiRespCode) {
-        PrintWriter     objOut = null;
-
-        try {
-            objOut = response.getWriter();
-        } catch (IOException ex) {
-            logger.severe("sendResponse(): Could NOT get writer for response!"
-                    + " Msg.: " + ex.getMessage());
-        }
-        sendResponse(response, objOut, aiRespCode);
-        objOut.close();
-    }
-
-    protected void sendResponse(HttpServletResponse response, PrintWriter aobjOut, int aiRespCode) {
-        int iRespCode = aiRespCode;
-
-        if (iRespCode < ConstWeb.HTTP_RESP_CONTINUE) {
-            iRespCode = ConstWeb.HTTP_RESP_INTERNAL_SRV_ERR;
-        }
-        try {
-            response.setStatus(iRespCode);
-        } catch (IllegalArgumentException ex) {
-            logger.severe("sendResponse(): Could NOT set response!"
-                    + " Code: " + aiRespCode
-                    + "; Msg.: " + ex.getMessage());
-        }
-        response.resetBuffer();
-        if (aiRespCode != ConstGlobal.RETURN_OK) {
-            aobjOut.println("Error: " + aiRespCode);
-        }
-    } */
-
-
     protected int readRequestData(HttpServletRequest request, StringBuilder asData) {
         // Local variables
         int             iResult;
