@@ -14,8 +14,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import static com.stupica.ConstWeb.HTTP_METHOD_NAME_GET;
-import static com.stupica.ConstWeb.HTTP_METHOD_NAME_PUT;
+import static com.stupica.ConstWeb.*;
 
 
 /**
@@ -37,59 +36,50 @@ public class ServiceBase extends HttpServlet {
     private Setting objSetting = Setting.getConfig();
 
 
+    /**
+     * Method: service()
+     *
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     *
+     * Ref.: https://technology.amis.nl/languages/java-languages/handle-http-patch-request-with-java-servlet/
+     */
+    public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (request.getMethod().equalsIgnoreCase(HTTP_METHOD_NAME_PATCH)) {
+            doPatch(request, response);
+        } else {
+            super.service(request, response);
+        }
+    }
+
+    /*
+    public abstract void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        return;
+    } */
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Local variables
-        int             iResult;
-        ResultProcessWeb objResult;
-
-        // Initialization
-        iResult = ConstGlobal.RETURN_OK;
-        objResult = new ResultProcessWeb();
-
-        logMethod(request, "doGet");
-
-        //super.doGet(request, response);
-
-        setContentType(response);
-        request.setCharacterEncoding(ConstGlobal.ENCODING_UTF_8);
-        response.setCharacterEncoding(ConstGlobal.ENCODING_UTF_8);             // UTF-8
-
-        // Security verification(s) ..
-        if (bVerifyReferal) {
-            iResult = checkReferer(request, objResult);
-            // Error ..
-            if (iResult != ConstGlobal.RETURN_OK) {
-                logger.warning("doGet(): Msg.: Method checkReferer() reported inconsistency!"
-                    + " Msg.: " + objResult.sMsg.toString());
-                return;
-            }
-        }
-        // Security verification(s) ..
-        if (bVerifyOrigin) {
-            iResult = checkOrigin(request, objResult);
-            // Error ..
-            if (iResult != ConstGlobal.RETURN_OK) {
-                logger.warning("doGet(): Msg.: Method checkOrigin() reported inconsistency!"
-                        + " Msg.: " + objResult.sMsg.toString());
-                return;
-            }
-        }
-
-        if (bSetCors) {
-            // CORS (Access-Control-Allow-Origin)
-            response.addHeader("Access-Control-Allow-Origin", "*");
-        }
+        doRequest(HTTP_METHOD_NAME_GET, request, response);
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doPostPut(request, response);
+        doRequest(HTTP_METHOD_NAME_POST, request, response);
     }
 
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doPostPut(request, response);
+        doRequest(HTTP_METHOD_NAME_PUT, request, response);
     }
 
-    private void doPostPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doRequest(HTTP_METHOD_NAME_PATCH, request, response);
+    }
+
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doRequest(HTTP_METHOD_NAME_DELETE, request, response);
+    }
+
+    private void doRequest(String asMethod, HttpServletRequest request, HttpServletResponse response) throws IOException {
         // Local variables
         int             iResult;
         ResultProcessWeb objResult;
@@ -98,21 +88,21 @@ public class ServiceBase extends HttpServlet {
         iResult = ConstGlobal.RETURN_OK;
         objResult = new ResultProcessWeb();
 
-        logMethod(request, "doPostPut");
+        logMethod(request, asMethod);
 
         //super.doPut(request, response);
 
         //response.setContentType("application/json");        // JSON
         setContentType(response);
-        request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");             // UTF-8
+        request.setCharacterEncoding(ConstGlobal.ENCODING_UTF_8);
+        response.setCharacterEncoding(ConstGlobal.ENCODING_UTF_8);   // UTF-8
 
         // Security verification(s) ..
         if (bVerifyReferal) {
             iResult = checkReferer(request, objResult);
             // Error ..
             if (iResult != ConstGlobal.RETURN_OK) {
-                logger.warning("doPostPut(): Msg.: Method checkReferer() reported inconsistency!"
+                logger.warning("doRequest(): Msg.: Method checkReferer() reported inconsistency!"
                         + " Msg.: " + objResult.sMsg.toString());
                 return;
             }
@@ -122,7 +112,7 @@ public class ServiceBase extends HttpServlet {
             iResult = checkOrigin(request, objResult);
             // Error ..
             if (iResult != ConstGlobal.RETURN_OK) {
-                logger.warning("doPostPut(): Msg.: Method checkOrigin() reported inconsistency!"
+                logger.warning("doRequest(): Msg.: Method checkOrigin() reported inconsistency!"
                         + " Msg.: " + objResult.sMsg.toString());
                 return;
             }
