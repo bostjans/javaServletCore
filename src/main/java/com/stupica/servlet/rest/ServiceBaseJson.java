@@ -17,7 +17,7 @@ import com.stupica.core.UtilDate;
 import com.stupica.core.UtilString;
 import com.stupica.servlet.ResultProcessWeb;
 import com.stupica.servlet.ServiceBase;
-import com.stupica.servlet.Setting;
+import com.stupica.config.Setting;
 
 
 public class ServiceBaseJson extends ServiceBase {

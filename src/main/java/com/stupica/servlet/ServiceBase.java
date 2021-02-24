@@ -4,6 +4,7 @@ package com.stupica.servlet;
 import com.stupica.ConstGlobal;
 import com.stupica.ConstWeb;
 import com.stupica.core.UtilString;
+import com.stupica.config.Setting;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

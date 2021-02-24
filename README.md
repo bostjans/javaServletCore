@@ -1,2 +1,2 @@
 # javaServletCore
-Servlet Core - Component to provide some basic Servlet functionality
+Servlet Core - Component to provide some basic Servlet functionality.
