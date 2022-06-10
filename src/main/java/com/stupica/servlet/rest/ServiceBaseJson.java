@@ -307,13 +307,12 @@ public class ServiceBaseJson extends ServiceBase {
         // Local variables
         int             iResult;
         int             iLenData = 0;
-        //int             iLenDataProbe = 0;
         StringBuilder   sData = new StringBuilder();
         JsonObject      objJson = null;
 
         // Initialization
 
-        iResult = readRequestData(request, sData);
+        iResult = readRequestData(request, sData, false);
         // Check previous step
         if (iResult == ConstGlobal.RETURN_OK) {
             iLenData = sData.length();
@@ -321,11 +320,6 @@ public class ServiceBaseJson extends ServiceBase {
                 logger.info("readRequestDataParse():"
                         + " dataLength: " + sData.length()
                         + " sData: " + sData.toString());
-                //if (iLenData < 10) {
-                //    iLenDataProbe = iLenData;
-                //} else {
-                //    iLenDataProbe = 10;
-                //}
                 try {
                     //if (sData.substring(0, iLenDataProbe).startsWith("[")) {
                     //    objJsonArr = Json.parse(sData.toString()).asArray();
@@ -361,7 +355,7 @@ public class ServiceBaseJson extends ServiceBase {
         // Initialization
         //iResult = Constant.i_func_return_OK;
 
-        iResult = readRequestData(request, sData);
+        iResult = readRequestData(request, sData, false);
         // Check previous step
         if (iResult == ConstGlobal.RETURN_OK) {
             iLenData = sData.length();

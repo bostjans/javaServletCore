@@ -3,6 +3,7 @@ package com.stupica.servlet;
 
 import com.stupica.ConstGlobal;
 import com.stupica.ConstWeb;
+import com.stupica.core.UtilCommon;
 import com.stupica.core.UtilString;
 import com.stupica.config.Setting;
 
@@ -361,7 +362,7 @@ public class ServiceBase extends HttpServlet {
     }
 
 
-    protected int readRequestData(HttpServletRequest request, StringBuilder asData) {
+    protected int readRequestData(HttpServletRequest request, StringBuilder asData, boolean abRequestForm) {
         // Local variables
         int             iResult;
         StringBuilder   sData = asData;
@@ -370,15 +371,30 @@ public class ServiceBase extends HttpServlet {
         // Initialization
         iResult = ConstGlobal.RETURN_OK;
         try {
-            BufferedReader reader = request.getReader();
-            while ((sTempLine = reader.readLine()) != null)
+            if (abRequestForm) {
+                sTempLine = request.getParameterMap().toString();
                 sData.append(sTempLine);
+            }
+            if (UtilString.isEmpty(sTempLine)) {
+                BufferedReader reader = request.getReader();
+                while ((sTempLine = reader.readLine()) != null)
+                    sData.append(sTempLine);
+                if (reader != null)
+                    reader.close();
+            }
         } catch (IOException e) {
             iResult = ConstGlobal.RETURN_ERROR;
             logger.severe("readRequestData(): IO Error at data retrieval!"
                     + " Msg.: " + e.getMessage()
                     + "; sVal: " + sTempLine
                     + "\n\tsData: " + sData.toString());
+        } catch (IllegalStateException e) {
+            iResult = ConstGlobal.RETURN_ERROR;
+            logger.severe("readRequestData(): Error at data retrieval - illegal_state!"
+                    + " Msg.: " + e.getMessage()
+                    + "; sVal: " + sTempLine
+                    //+ "\n\tsData: n/a"
+                    + "\n\t> " + UtilCommon.exceptionStackToString(e));
         } catch (Exception e) {
             iResult = ConstGlobal.RETURN_ERROR;
             logger.severe("readRequestData(): Error at data retrieval!"

@@ -6,7 +6,7 @@
 
     <groupId>com.stupica.base</groupId>
     <artifactId>servletCore</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.1</version>
     <packaging>jar</packaging>
     <name>servletCore</name>
     <organization>
@@ -16,7 +16,6 @@
     <url>http://developer.stupica.com/maven</url>
 
     <!-- library dependencies -->
-
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
